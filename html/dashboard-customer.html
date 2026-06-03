@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Customer | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <a href="index.html" class="logo">On<span>call</span></a>
+            <nav class="sidebar-nav">
+                <a href="dashboard-customer.html" class="nav-item active"><i class="fa-solid fa-house"></i> <span>My Requests</span></a>
+                <a href="customer-messages.html" class="nav-item"><i class="fa-solid fa-message"></i> <span>Messages</span></a>
+                <a href="customer-history.html" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> <span>History</span></a>
+                <a href="customer-profile.html" class="nav-item"><i class="fa-solid fa-user"></i> <span>Profile</span></a>
+            </nav>
+            <a href="login.html" class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+        </aside>
+
+        <main class="main-content">
+            <header class="dash-header fade-up">
+                <div class="header-info">
+                    <h1>Welcome, Sarah</h1>
+                    <p>Managing your service requests in Johannesburg.</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar-sm">SA</div>
+                </div>
+            </header>
+
+            <div class="view-section active" id="view-requests">
+                <div class="stats-grid fade-up" style="animation-delay: 0.1s;">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-paper-plane"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">2</span>
+                            <span class="stat-label">Active Requests</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Completed Jobs</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-star"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">4.9</span>
+                            <span class="stat-label">Customer Rating</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-section fade-up" style="animation-delay: 0.2s;">
+                    <div class="table-header">
+                        <h3>Active Requests</h3>
+                        <a href="index.html" class="btn btn-primary btn-sm" style="padding: 8px 16px; font-size: 0.9rem;">New Request</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Service Needed</th>
+                                <th>Status</th>
+                                <th>Bids Received</th>
+                                <th>Request Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Kitchen Sink Leak</strong></td>
+                                <td><span class="status-badge status-pending">Collecting Bids</span></td>
+                                <td>4 Providers</td>
+                                <td>Today, 14:20</td>
+                                <td><button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.8rem;">View Bids</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Garden Maintenance</strong></td>
+                                <td><span class="status-badge status-active">Provider en Route</span></td>
+                                <td>Sipho's Gardens</td>
+                                <td>Yesterday</td>
+                                <td><button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.8rem;">Live Map</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-messages">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Messages</h3>
+                    </div>
+                    <div class="chat-container">
+                        <div class="chat-messages">
+                            <div class="message received">Hi Sarah, I've seen your request for the kitchen leak. Is the shut-off valve accessible?</div>
+                            <div class="message sent">Yes, it's right under the sink!</div>
+                            <div class="message received">Perfect. I've submitted my bid. Hope to help you soon.</div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="chat-msg-input" placeholder="Type a message...">
+                            <button id="chat-send" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-history">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Booking History</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Provider</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Deep Cleaning</td>
+                                <td>Sparkle Pros</td>
+                                <td>15 Mar 2025</td>
+                                <td>R850</td>
+                                <td><span style="color:var(--accent);"><i class="fa-solid fa-star"></i> 5.0</span></td>
+                            </tr>
+                            <tr>
+                                <td>Electrical Repair</td>
+                                <td>VoltMasters</td>
+                                <td>02 Mar 2025</td>
+                                <td>R1,200</td>
+                                <td><span style="color:var(--accent);"><i class="fa-solid fa-star"></i> 4.5</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-profile">
+                <div class="card-section">
+                    <h3>My Profile</h3>
+                    <p style="color:var(--text-muted); margin-bottom:24px;">Manage your personal information and preferences.</p>
+                    <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" value="Sarah Adams">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" value="082 123 4567">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Default Address</label>
+                        <input type="text" value="123 Jan Smuts Ave, Rosebank, Johannesburg">
+                    </div>
+                    <button class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

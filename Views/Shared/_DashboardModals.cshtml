@@ -1,0 +1,232 @@
+@* ── Supplier Rating Modal ── *@
+<div id="ratingModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 450px; width: 90%;">
+        <div class="modal-header">
+            <h2 id="ratingTitle" style="font-size: 1.3rem; margin: 0;">Rate Service</h2>
+            <button onclick="$('#ratingModal').removeClass('active'); $('body').removeClass('modal-open');" class="modal-close">&times;</button>
+        </div>
+        <div style="padding: 24px;">
+            <form id="ratingForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" id="ratingRequestId">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div class="rating-stars" style="font-size: 2.5rem; color: #CBD5E1; cursor: pointer;">
+                        <i class="fa-solid fa-star" data-val="1"></i>
+                        <i class="fa-solid fa-star" data-val="2"></i>
+                        <i class="fa-solid fa-star" data-val="3"></i>
+                        <i class="fa-solid fa-star" data-val="4"></i>
+                        <i class="fa-solid fa-star" data-val="5"></i>
+                    </div>
+                    <input type="hidden" name="score" id="ratingScore" value="0">
+                    <p style="margin-top: 8px; font-weight: 600; color: var(--primary);" id="ratingLabel">Select a rating</p>
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label>Review / Comment (Optional)</label>
+                    <textarea name="comment" placeholder="Tell us about your experience..." style="width:100%; min-height:80px; border:1px solid var(--border); border-radius:12px; padding:12px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; height:50px; border-radius:12px;">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Bids & Management Modal ── *@
+<div id="bidsModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 700px; width: 95%; padding: 0;">
+        <div class="modal-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border);">
+            <h2 id="bidsModalTitle" style="font-size: 1.4rem; margin: 0;">Manage Request</h2>
+            <button onclick="$('#bidsModal').removeClass('active'); $('body').removeClass('modal-open');" class="modal-close">&times;</button>
+        </div>
+
+        <div style="padding: 0 40px; background: white; border-bottom: 1px solid var(--border);">
+            <div class="timeline-stepper" id="requestTimeline">
+                <div class="timeline-progress-bar" id="timelineProgress" style="width: 0%;"></div>
+                @* Timeline steps are here *@
+                <div class="timeline-step" data-step="0">
+                    <div class="step-bubble"><i class="fa-solid fa-file-shield"></i></div>
+                    <span class="step-label">Posted</span>
+                </div>
+                <div class="timeline-step" data-step="1">
+                    <div class="step-bubble"><i class="fa-solid fa-users-viewfinder"></i></div>
+                    <span class="step-label">Bidding</span>
+                </div>
+                <div class="timeline-step" data-step="2">
+                    <div class="step-bubble"><i class="fa-solid fa-credit-card"></i></div>
+                    <span class="step-label">Payment</span>
+                </div>
+                <div class="timeline-step" data-step="3">
+                    <div class="step-bubble"><i class="fa-solid fa-hammer"></i></div>
+                    <span class="step-label">Started</span>
+                </div>
+                <div class="timeline-step" data-step="4">
+                    <div class="step-bubble"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <span class="step-label">Review</span>
+                </div>
+                <div class="timeline-step" data-step="5">
+                    <div class="step-bubble"><i class="fa-solid fa-circle-check"></i></div>
+                    <span class="step-label">Done</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="bidsListContainer" style="padding: 32px; min-height: 300px; max-height: 70vh; overflow-y: auto;">
+            <!-- Bids will be loaded here via AJAX -->
+            <div style="text-align: center; padding: 100px 40px;">
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+                <p style="font-weight: 700; color: var(--primary);">Scanning for expert bids...</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">This usually takes a few seconds.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Direct Booking Modal ── *@
+<div id="directBookingModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 500px; width: 94%; padding: 0;">
+        <div class="modal-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border);">
+            <div>
+                <h2 id="directBookingTitle" style="font-size: 1.4rem; margin:0;">Book Provider</h2>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 0;">Request this provider directly</p>
+            </div>
+            <button onclick="$('#directBookingModal').removeClass('active'); $('body').removeClass('modal-open');" class="modal-close">&times;</button>
+        </div>
+        <div style="padding: 32px; max-height: 80vh; overflow-y: auto;">
+            <form id="directBookingForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProviderId" id="directBookingProviderId">
+                <input type="hidden" name="Category" id="directBookingTrade">
+
+                <div style="padding:14px 16px; background:var(--primary-light); border-radius:12px; margin-bottom:20px; display:flex; align-items:center; gap:12px; border: 1px solid var(--border);">
+                    <i class="fa-solid fa-user-check" style="color:var(--primary); font-size:1.2rem;"></i>
+                    <div>
+                        <div style="font-weight:700; font-size:0.9rem;" id="directBookingProviderName">Provider</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">Verified Professional</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Describe the Job</label>
+                    <textarea name="Description" rows="3" placeholder="What exactly do you need done?" required style="width:100%; resize:vertical;"></textarea>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div class="form-group">
+                        <label>Your Location</label>
+                        <input type="text" name="Location" placeholder="Your address" value="@ViewBag.UserLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label>When needed?</label>
+                        <select name="Urgency">
+                            <option>ASAP</option>
+                            <option>This week</option>
+                            <option>This month</option>
+                            <option>Flexible</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px; border-radius: 12px; margin-top: 16px;">
+                    <i class="fa-solid fa-paper-plane"></i> Confirm Booking
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Provider Professional Profile Modal ── *@
+<div id="providerProfileModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 800px; width: 95%; padding: 0;">
+        <div class="modal-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border); background:var(--surface);">
+            <h2 style="font-size: 1.4rem; margin: 0;">Professional Profile</h2>
+            <button onclick="$('#providerProfileModal').removeClass('active'); $('body').removeClass('modal-open');" class="modal-close">&times;</button>
+        </div>
+        
+        <div style="max-height: 85vh; overflow-y: auto;">
+            <!-- Profile Hero -->
+            <div style="padding: 32px; background: linear-gradient(135deg, var(--primary-light), white); display: flex; gap: 32px; align-items: flex-start; border-bottom: 1px solid var(--border);">
+                <img id="pp-image" src="" style="width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid white; box-shadow: var(--shadow-md);">
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h2 id="pp-name" style="margin: 0 0 4px 0; font-size: 1.8rem; color: var(--text-main);"></h2>
+                            <p id="pp-trade" style="margin: 0; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;"></p>
+                        </div>
+                        <div id="pp-rating-big" style="text-align: right;">
+                            <div style="font-size: 1.8rem; font-weight: 800; color: #F59E0B;" id="pp-avg-val"></div>
+                            <div id="pp-stars-big" style="margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="pp-stats-row" style="display: flex; gap: 24px; margin-top: 20px;">
+                        <div class="pp-stat">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div>
+                                <div id="pp-jobs-count" style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);"></div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Jobs Done</div>
+                            </div>
+                        </div>
+                        <div class="pp-stat">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <div>
+                                <div id="pp-joined" style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);"></div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Member Since</div>
+                            </div>
+                        </div>
+                        <div class="pp-stat">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <div>
+                                <div id="pp-location" style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);"></div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Base Location</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pp-grid">
+                <!-- About Column -->
+                <div>
+                    <h3 style="margin-top: 0; font-size: 1.1rem; margin-bottom: 16px;">About Professional</h3>
+                    <p id="pp-about" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; white-space: pre-line;"></p>
+                    
+                    <div class="pp-about-action" style="margin-top: 32px; padding: 24px; background: var(--background); border-radius: 16px; border: 1px solid var(--border);">
+                        <h4 style="margin: 0 0 12px 0; font-size: 0.9rem;">Need this service?</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Book directly with this professional and get a customized quote.</p>
+                        <button id="pp-book-btn" class="btn btn-primary" style="width: 100%; height: 48px; border-radius: 12px;">
+                            <i class="fa-solid fa-paper-plane"></i> Book Directly
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reviews Column -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-size: 1.1rem;">Customer Reviews</h3>
+                        <span id="pp-review-count" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+                    </div>
+                    <div id="pp-reviews-list" style="display: flex; flex-direction: column; gap: 20px;">
+                        <!-- Reviews populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pp-container { width: 95%; max-width: 900px; max-height: 90vh; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
+    .pp-header { display: flex; gap: 32px; padding: 40px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid var(--border); }
+    .pp-stat { display: flex; align-items: center; gap: 12px; }
+    .pp-stat i { font-size: 1.5rem; color: var(--primary); opacity: 0.4; }
+    .pp-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; padding: 40px; }
+    
+    .pp-review-item { padding: 20px; background: white; border: 1px solid var(--border); border-radius: 16px; transition: var(--transition); }
+    .pp-review-item:hover { box-shadow: var(--shadow-sm); transform: translateY(-2px); border-color: var(--primary-light); }
+
+    @@media (max-width: 768px) {
+        .pp-container { height: auto; max-height: 95vh; overflow-y: auto; }
+        .pp-header { flex-direction: column; text-align: center; gap: 20px; padding: 30px 20px; }
+        .pp-header img { margin: 0 auto; width: 120px !important; height: 120px !important; }
+        .pp-stats-row { flex-direction: column !important; align-items: center !important; gap: 16px !important; }
+        .pp-grid { grid-template-columns: 1fr !important; padding: 20px; gap: 24px; }
+        .pp-about-action { margin-top: 20px !important; }
+    }
+</style>

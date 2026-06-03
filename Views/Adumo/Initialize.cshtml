@@ -1,0 +1,46 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stating Payment Checkout...</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F8FAFC; color: #1E293B; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .loader-card { text-align: center; background: white; padding: 48px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 400px; width: 90%; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(15, 23, 42, 0.1); border-top: 5px solid #0F172A; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 24px; }
+        @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { margin-bottom: 8px; font-size: 1.25rem; }
+        p { color: #64748B; font-size: 0.9rem; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="loader-card">
+        <div class="spinner"></div>
+        <h2>Securing Funds</h2>
+        <p>Redirecting you to our secure payment partner (Adumo). Please do not close this window.</p>
+        
+        <form id="payForm" method="POST" action="@ViewBag.Endpoint">
+            <input type="hidden" name="flow" id="flow" value="">
+            <input type="hidden" name="puid" id="puid" value="@ViewBag.Puid">
+            <input type="hidden" name="MerchantID" value="@ViewBag.MerchantId" />
+            <input type="hidden" name="ApplicationID" value="@ViewBag.AppId" />
+            <input type="hidden" name="MerchantReference" value="@ViewBag.Mref" />
+            <input type="hidden" name="Amount" value="@ViewBag.Amount" />
+            <input type="hidden" name="Token" value="@ViewBag.Token" />
+            <input type="hidden" name="txtCurrencyCode" value="@ViewBag.Currency">
+            <input type="hidden" name="AuthoriseCurrencyCode" value="@ViewBag.Currency">
+            <input type="hidden" name="RedirectSuccessfulURL" value="@ViewBag.SuccessUrl" />
+            <input type="hidden" name="RedirectFailedURL" value="@ViewBag.FailUrl" />
+        </form>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                document.getElementById('payForm').submit();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

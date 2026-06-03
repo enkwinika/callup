@@ -1,0 +1,391 @@
+@{
+    ViewBag.Title = "Create Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page fade-in">
+    <div class="glass-card" style="max-width: 560px; width: 100%; padding: 48px; border-radius: 32px;">
+        @* Brand Hub *@
+        <div style="text-align: center; margin-bottom: 40px;">
+            <a href="@Url.Action("Index", "Home")">
+                <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 150px; margin-bottom: 24px;">
+            </a>
+            <h1 class="font-display" style="font-size: 1.8rem; margin-bottom: 8px;">Create Your Account</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Join the premium network for on-demand services</p>
+        </div>
+
+        @* Step 1: Role Selection Cards *@
+        <div id="step-1-container">
+            <h2 style="text-align: center; font-size: 1.1rem; color: var(--text-muted); margin-bottom: 24px; font-weight: 600;">Step 1: Choose Your Account Type</h2>
+            <div class="role-cards-grid">
+                <div class="role-card" id="card-customer" onclick="selectRole('Customer')">
+                    <div class="role-card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="role-card-content">
+                        <h3>Customer</h3>
+                        <p>I want to hire verified professionals for my home or business.</p>
+                    </div>
+                    <div class="role-card-check">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+
+                <div class="role-card" id="card-provider" onclick="selectRole('Provider')">
+                    <div class="role-card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div class="role-card-content">
+                        <h3>Service Provider</h3>
+                        <p>I want to offer my services and grow my business on CallUp.</p>
+                    </div>
+                    <div class="role-card-check">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Step 2: Registration Form (Initially Hidden) *@
+        <div id="step-2-container" style="display: none; margin-top: 32px; border-top: 1px solid var(--border); padding-top: 32px; animation: slideUp 0.4s ease-out;">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <span class="pill" id="role-badge" style="background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Customer Account</span>
+                <h2 style="margin-top: 16px; font-size: 1.4rem;">Complete Your Profile</h2>
+            </div>
+
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { id = "registerForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserRole" id="UserRoleInput" value="Customer">
+
+                <!-- Alert Container for Feedback -->
+                <div id="alertContainer" style="display: none; margin-bottom: 24px;"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="form-group">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">First Name</label>
+                        <input type="text" name="FirstName" class="form-control" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Last Name</label>
+                        <input type="text" name="LastName" class="form-control" placeholder="Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Email Address</label>
+                    <input type="email" name="Email" class="form-control" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Contact Number</label>
+                    <input type="tel" name="PhoneNumber" class="form-control" placeholder="012 345 6789" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Set Password</label>
+                    <input type="password" name="Password" class="form-control" placeholder="Min. 8 characters" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Account Location</label>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-location-dot" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary);"></i>
+                        <input type="text" name="Location" id="LocationAutocomplete" class="form-control" placeholder="Search your area..." style="padding-left: 48px;" required autocomplete="off">
+                    </div>
+                </div>
+
+                <input type="hidden" name="Latitude" id="Latitude">
+                <input type="hidden" name="Longitude" id="Longitude">
+
+                @* PROVIDER FIELDS *@
+                <div id="provider-fields" style="display: none; border-top: 1px dashed var(--border); margin-top: 32px; padding-top: 32px;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <span class="pill pill-success" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800;">Business Identity</span>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Company Name</label>
+                        <input type="text" name="CompanyName" id="CompanyName" class="form-control" placeholder="ABC Solutions (Pty) Ltd">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Primary Service Category</label>
+                        <select name="CategoryId" id="CategoryId" class="form-control" onchange="toggleOtherCategory(this.value)">
+                            <option value="">Select Specialty</option>
+                            <option value="1">Cleaning</option>
+                            <option value="2">Plumbing</option>
+                            <option value="3">Electrical</option>
+                            <option value="4">Gardening</option>
+                            <option value="5">Painting</option>
+                            <option value="6">Security</option>
+                            <option value="7">Moving</option>
+                            <option value="8">Appliances</option>
+                            <option value="0">Other (Specify below)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="other-category-group" style="display: none; margin-bottom: 24px; animation: slideDown 0.3s ease-out;">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--primary); margin-bottom: 8px; display: block;">Specify Your Service</label>
+                        <input type="text" name="OtherCategory" id="OtherCategory" class="form-control" placeholder="e.g. Carpentry, Web Design, etc.">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 32px;">
+                        <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Registration # (Optional)</label>
+                        <input type="text" name="CompanyRegNo" id="CompanyRegNo" class="form-control" placeholder="202X/XXXXXX/XX">
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; height: 56px; font-size: 1.1rem; border-radius: 16px;">
+                    Register <i class="fa-solid fa-rocket" style="margin-left: 10px;"></i>
+                </button>
+            }
+        </div>
+
+        <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);">
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Already a member? <a href="@Url.Action("Login", "Account")" style="color: var(--primary); font-weight: 800;">Log In</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-cards-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .role-card {
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        padding: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .role-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .role-card.selected {
+        border-color: var(--primary);
+        background: rgba(var(--primary-h), var(--primary-s), 98%);
+    }
+
+    .role-card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .role-card-content h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text-main);
+    }
+
+    .role-card-content p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .role-card-check {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.2rem;
+        color: var(--primary);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s ease;
+    }
+
+    .role-card.selected .role-card-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .alert-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+        animation: slideDown 0.3s ease-out;
+    }
+    .alert-success { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .alert-error { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+    @@keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+    function toggleOtherCategory(val) {
+        const group = document.getElementById('other-category-group');
+        const input = document.getElementById('OtherCategory');
+        if (val === "0") {
+            group.style.display = 'block';
+            input.required = true;
+            input.focus();
+        } else {
+            group.style.display = 'none';
+            input.required = false;
+        }
+    }
+
+    function selectRole(role) {
+        // Update selection state
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = role === 'Customer' ? document.getElementById('card-customer') : document.getElementById('card-provider');
+        selectedCard.classList.add('selected');
+
+        // Update hidden input
+        document.getElementById('UserRoleInput').value = role;
+
+        // Show form
+        const step2 = document.getElementById('step-2-container');
+        step2.style.display = 'block';
+
+        // Update UI details
+        const badge = document.getElementById('role-badge');
+        const pf = document.getElementById('provider-fields');
+        const cn = document.getElementById('CompanyName');
+        const ci = document.getElementById('CategoryId');
+        
+        if (role === 'Provider') {
+            badge.innerText = 'Service Provider Account';
+            badge.style.background = '#10b981'; // Success green
+            pf.style.display = 'block';
+            cn.required = true; ci.required = true;
+        } else {
+            badge.innerText = 'Customer Account';
+            badge.style.background = 'var(--primary)';
+            pf.style.display = 'none';
+            cn.required = false; ci.required = false;
+            document.getElementById('OtherCategory').required = false;
+            document.getElementById('other-category-group').style.display = 'none';
+            ci.value = ""; // Reset category selection
+        }
+
+        // Smooth scroll to form if needed
+        setTimeout(() => {
+            step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    // Unified AJAX Registration Handle
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const alertBox = document.getElementById('alertContainer');
+        const originalBtnHtml = btn.innerHTML;
+
+        // Reset UI
+        alertBox.style.display = 'none';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+
+        console.log("%c[REGISTER] Submission Started", "color: #3b82f6; font-weight: bold; font-size: 1.2rem;");
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        data.Password = "********"; // Log masking
+
+        console.log("Payload:", data);
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const responseText = await response.text();
+            let result;
+            
+            try {
+                result = JSON.parse(responseText);
+            } catch (e) {
+                console.error("%c[FATAL] Server returned HTML instead of JSON.", "color: #ef4444; font-weight: bold;");
+                console.log("Response Snippet:", responseText.substring(0, 1000));
+                
+                alertBox.innerHTML = `<div class="alert-banner alert-error"><i class="fa-solid fa-triangle-exclamation"></i> Server Error (HTML returned). Check console for details.</div>`;
+                alertBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                return;
+            }
+
+            console.log("%c[RESPONSE] Server Results:", "color: #10b981; font-weight: bold;", result);
+
+            if (result.success) {
+                alertBox.innerHTML = `<div class="alert-banner alert-success"><i class="fa-solid fa-circle-check"></i> ${result.message} Redirecting...</div>`;
+                alertBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = result.redirectUrl;
+                }, 1500);
+            } else {
+                let errorHtml = `<div class="alert-banner alert-error"><i class="fa-solid fa-circle-exclamation"></i> ${result.message}`;
+                if (result.errors && result.errors.length > 0) {
+                    errorHtml += `<ul style="margin: 8px 0 0 24px; padding: 0;">`;
+                    result.errors.forEach(err => errorHtml += `<li>${err}</li>`);
+                    errorHtml += `</ul>`;
+                }
+                errorHtml += `</div>`;
+                
+                alertBox.innerHTML = errorHtml;
+                alertBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                
+                console.error("[REGISTER] Failed:", result.message, result.errors);
+            }
+        } catch (error) {
+            console.error("%c[FATAL] Network or Server Error:", "color: #ef4444;", error);
+            alertBox.innerHTML = `<div class="alert-banner alert-error"><i class="fa-solid fa-triangle-exclamation"></i> Connection failed. Please check your console.</div>`;
+            alertBox.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
+        }
+    });
+
+    // Check for session-persisted debug data if needed
+    window.addEventListener('load', function() {
+        // Clear old debug data
+        sessionStorage.removeItem('last_reg_attempt');
+    });
+</script>

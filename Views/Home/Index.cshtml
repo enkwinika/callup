@@ -1,0 +1,236 @@
+<section class="hero-v2 fade-in" style="min-height: 90vh; display: flex; align-items: center; padding: 40px 24px; position: relative; border-bottom: 1px solid var(--border); background-color: white;">
+    <!-- Subtly scaled service icons pattern -->
+    <div style="position: absolute; inset: 0; opacity: 0.04; pointer-events: none; background-image: url('data:image/svg+xml,%3Csvg width=\"120\" height=\"120\" viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M10 10h1v1h-1zM50 40h1v1h-1zM90 10h1v1h-1zM10 90h1v1h-1zM50 120h1v1h-1z\" fill=\"%23000\" fill-opacity=\"0\"/%3E%3Cg fill=\"%23334155\"%3E%3C!-- Wrench --%3E%3Cpath d=\"M25 25l-2 2 1 1 2-2zM21 21a3 3 0 0 1 4 0l-1 1-1-1-1 1 1 1-1 1a3 3 0 0 1 0-4z\"/%3E%3C!-- Bolt/Electrical --%3E%3Cpath d=\"M85 35l-2 3h2l-1 3 3-4h-2l2-2z\"/%3E%3C!-- Hammer --%3E%3Cpath d=\"M35 85l3-3-1-1-3 3 1 1zM34 83a2 2 0 0 1 3-3l1 1-3 3-1-1z\"/%3E%3C!-- Broom --%3E%3Cpath d=\"M95 85l-4 4M92 88l2 2\" stroke=\"%23334155\" stroke-width=\"1\"/%3E%3C/g%3E%3C/svg%3E'); background-size: 120px 120px; mask-image: radial-gradient(circle at center, black 0%, transparent 80%);"></div>
+    <div style="width: 100%; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+        
+        <div style="text-align: left;">
+            <div style="margin-bottom: 2rem;">
+                <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp Logo" style="height: 260px;">
+            </div>
+            <h1 class="font-display" style="font-size: clamp(3rem, 5vw, 4.5rem); line-height: 1.05; margin-bottom: 24px; text-align: left;">
+                Hire the Best Pros<br>
+                <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">With Zero Friction.</span>
+            </h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; max-width: 500px; line-height: 1.6;">
+                The premium way to get any home job done. Compare vetted local pros, view live bids, and enjoy guaranteed satisfaction.
+            </p>
+            <div style="display: flex; gap: 16px;">
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary" style="padding: 18px 48px; font-size: 1.1rem; border-radius: 50px;">
+                    Login
+                </a>
+            </div>
+            
+            <!-- <div style="display: flex; gap: 40px; margin-top: 60px;">
+                <div>
+                    <span style="display: block; font-size: 1.5rem; font-weight: 800;">5k+</span>
+                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em;">Vetted Pros</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 1.5rem; font-weight: 800;">15m</span>
+                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em;">Response</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 1.5rem; font-weight: 800;">4.9/5</span>
+                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em;">Rating</span>
+                </div>
+            </div> -->
+        </div>
+
+        <div class="hero-visual" style="position: relative;">
+            <div style="position: absolute; inset: -20px; background: var(--primary-light); border-radius: 40px; transform: rotate(3deg); z-index: 1;"></div>
+            <img src="@Url.Content("~/Content/img/brand/landing-hero.png")" 
+                 alt="CallUp Marketplace" 
+                 style="width: 100%; border-radius: 32px; position: relative; z-index: 2; box-shadow: var(--shadow-xl); transform: scale(1.05);">
+        </div>
+
+    </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section-padding" style="background: white;">
+    <div class="text-center" style="margin-bottom: 80px;">
+        <span class="section-tag">Simple Process</span>
+        <h2 style="font-size: 2.5rem;">How it <span style="color: var(--primary);">Works</span></h2>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 12px auto 0;">Getting your home projects completed has never been this effortless.</p>
+    </div>
+
+    <div class="step-grid">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Describe the Task</h3>
+            <p>Tell us what you need fixed or built. Add photos and your budget range to get the best responses.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>Compare Live Bids</h3>
+            <p>Vetted local pros will send you competitive bids. Review their profiles, ratings, and past work history.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Get it Done</h3>
+            <p>Choose your pro, they complete the work, and you release the payment once you're 100% satisfied.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── POPULAR SERVICES ── -->
+<section id="categories" class="feature-section" style="background: var(--bg-arctic); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div style="max-width: 1200px; margin: 0 auto 64px; text-align: left; padding: 0 24px;">
+        <h2 style="font-size: 3rem; margin-bottom: 16px;">What do you need <span style="background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">fixed today?</span></h2>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Explore our most requested home services across South Africa.</p>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card" onclick="location.href='@Url.Action("Login", "Account")'" style="cursor: pointer;">
+            <div class="feature-icon"><i class="fa-solid fa-broom"></i></div>
+            <h3>Cleaning</h3>
+            <p>Homes, offices, and post-construction deep cleans by verified cleaners.</p>
+        </div>
+        <div class="feature-card" onclick="location.href='@Url.Action("Login", "Account")'" style="cursor: pointer;">
+            <div class="feature-icon"><i class="fa-solid fa-faucet-drip"></i></div>
+            <h3>Plumbing</h3>
+            <p>Leaks, burst pipes, and blocked drains handled by licensed plumbers.</p>
+        </div>
+        <div class="feature-card" onclick="location.href='@Url.Action("Login", "Account")'" style="cursor: pointer;">
+            <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+            <h3>Electrical</h3>
+            <p>Wiring, lighting, and power faults resolved by expert electricians.</p>
+        </div>
+        <div class="feature-card" onclick="location.href='@Url.Action("Login", "Account")'" style="cursor: pointer;">
+            <div class="feature-icon"><i class="fa-solid fa-seedling"></i></div>
+            <h3>Gardening</h3>
+            <p>Lawn care, tree trimming, and full garden maintenance solutions.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOR PROFESSIONALS ── -->
+<section class="section-padding">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div class="pro-banner">
+            <div class="pro-content">
+                <span style="color: var(--secondary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">Partner with Us</span>
+                <h2 style="font-size: 3rem; color: white; margin: 16px 0 24px;">Grow your business <br>with <span style="color: var(--secondary);">CallUp.</span></h2>
+                <ul style="list-style: none; padding: 0; margin-bottom: 40px;">
+                    <li style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-circle-check" style="color: var(--secondary);"></i> 0% Platform fees for your first 6 months
+                    </li>
+                    <li style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-circle-check" style="color: var(--secondary);"></i> Access high-intent leads in your local area
+                    </li>
+                    <li style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-circle-check" style="color: var(--secondary);"></i> Guaranteed secure payments on completion
+                    </li>
+                </ul>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-primary" style="background: var(--secondary); border: none; padding: 18px 48px;">
+                    Become a Provider
+                </a>
+            </div>
+            <div class="pro-visual" style="display: block;">
+                <div style="background: rgba(0,0,0,0.4); border-radius: 20px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 800;">JS</div>
+                        <div>
+                            <div style="font-weight: 700;">John Sithole</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">Verified Electrician</div>
+                        </div>
+                    </div>
+                    <p style="font-style: italic; font-size: 1.1rem; line-height: 1.6; color: #cbd5e1;">"CallUp has completely changed how I find new clients. The bidding system is fair, and I love that I get paid immediately after the job is approved."</p>
+                    <div style="display: flex; gap: 4px; color: var(--accent); margin-top: 16px;">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer-v2">
+    <div class="footer-grid">
+        <div class="footer-col" style="grid-column: span 2;">
+            <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                <img src="@Url.Content("~/Content/img/brand/logo-main.png")" alt="CallUp" style="height: 64px;">
+            </div>
+            <p style="color: #94a3b8; line-height: 1.7; max-width: 300px; margin-bottom: 32px;">
+                Connecting homeowners with vetted professionals for seamless home maintenance and repairs across South Africa.
+            </p>
+            <div style="display: flex; gap: 16px;">
+                <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h4>For Customers</h4>
+            <ul class="footer-links">
+                <li><a href="#categories">Browse Categories</a></li>
+                <li><a href="@Url.Action("Register", "Account")">Post a Request</a></li>
+                <li><a href="#">How it Works</a></li>
+                <li><a href="#">Safety & Reliability</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4>For Professionals</h4>
+            <ul class="footer-links">
+                <li><a href="@Url.Action("Register", "Account")">Join as a Pro</a></li>
+                <li><a href="#">Success Stories</a></li>
+                <li><a href="#">Pro Academy</a></li>
+                <li><a href="#">Advertising</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contact Support</h4>
+            <ul class="footer-links">
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div>© 2026 CallUp South Africa. All rights reserved.</div>
+        <div style="display: flex; gap: 24px;">
+            <span>Proudly South African 🇿🇦</span>
+            <a href="#" style="color: inherit; text-decoration: none;">Cookie Settings</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 24px;
+    }
+    .hero-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: var(--primary);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--primary);
+    }
+    @@media (max-width: 1024px) {
+        .hero-v2 > div { grid-template-columns: 1fr !important; text-align: center !important; }
+        .hero-v2 h1, .hero-v2 p { margin-left: auto !important; margin-right: auto !important; text-align: center !important; }
+        .hero-v2 div[style*="display: flex"] { justify-content: center !important; }
+        .hero-visual { display: none; }
+        .pro-banner { flex-direction: column; padding: 40px; text-align: center; }
+        .pro-visual { width: 100%; }
+    }
+</style>

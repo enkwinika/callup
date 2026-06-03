@@ -1,0 +1,84 @@
+<aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-brand" style="margin-bottom: 0px; padding-left: 0px;">
+        <a href="@Url.Action("Index", "Home")" class="logo" style="display:flex; align-items:center; text-decoration:none;">
+            <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 75px; width: auto; display:block;">
+        </a>
+    </div>
+
+    <div class="sidebar-section-label">Management</div>
+    <nav class="sidebar-nav">
+        <a href="javascript:void(0)" class="nav-item active" onclick="switchSection('accounts', this)" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-user-shield"></i> <span>Verifications</span>
+            </div>
+            @if (ViewBag.PendingUsers != null && ((IEnumerable<dynamic>)ViewBag.PendingUsers).Any())
+            {
+                <span class="badge" style="background: var(--primary); color: white; margin-left: auto;">@(((IEnumerable<dynamic>)ViewBag.PendingUsers).Count())</span>
+            }
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('requests', this)" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span>Moderation</span>
+            </div>
+            @if (ViewBag.PendingRequests != null && ((IEnumerable<dynamic>)ViewBag.PendingRequests).Any())
+            {
+                <span class="badge" style="background: var(--orange); color: white; margin-left: auto;">@(((IEnumerable<dynamic>)ViewBag.PendingRequests).Count())</span>
+            }
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('providers', this)">
+            <i class="fa-solid fa-user-check"></i> <span>Providers</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('all-requests', this)">
+            <i class="fa-solid fa-list-check"></i> <span>Requests</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('payouts', this)" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-money-bill-transfer"></i> <span>Payout Queue</span>
+            </div>
+            @if (ViewBag.PendingPayouts != null && ((IEnumerable<dynamic>)ViewBag.PendingPayouts).Any())
+            {
+                <span class="badge" style="background: var(--secondary); color: white; margin-left: auto;">@(((IEnumerable<dynamic>)ViewBag.PendingPayouts).Count())</span>
+            }
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('revenue', this)">
+            <i class="fa-solid fa-sack-dollar"></i> <span>Financial Revenue</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('users', this)">
+            <i class="fa-solid fa-users"></i> <span>User Directory</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-section-label" style="margin-top: 16px;">System</div>
+    <nav class="sidebar-nav">
+        <a href="@Url.Action("Setup", "Admin")" class="nav-item @(ViewContext.RouteData.Values["action"].ToString() == "Setup" ? "active" : "")">
+            <i class="fa-solid fa-gears"></i> <span>System Setup</span>
+        </a>
+        <a href="@Url.Action("SystemHealth", "Admin")" class="nav-item @(ViewContext.RouteData.Values["action"].ToString() == "SystemHealth" ? "active" : "")">
+            <i class="fa-solid fa-notes-medical"></i> <span>System Health</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('analytics', this)">
+            <i class="fa-solid fa-chart-line"></i> <span>Analytics</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" style="background: #1E293B;">
+                <i class="fa-solid fa-shield-halved" style="font-size: 1rem;"></i>
+            </div>
+            <div class="user-meta">
+                <div class="user-name">System Admin</div>
+                <div class="user-role-label">@User.Identity.Name</div>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <a href="javascript:document.getElementById('logoutForm').submit()" class="nav-item logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+            </a>
+        }
+    </div>
+</aside>
+

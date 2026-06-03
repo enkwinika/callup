@@ -1,0 +1,65 @@
+## Ignore Visual Studio temporary files, build results, and user settings
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.Backup.tmp
+
+# Mono auto generated files
+mono_crash.*
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Re]leases/
+x64/
+x86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]ogs/
+[Tt]emp/
+TempAspNetFiles/
+Temporary-ASP-Files/
+_temp/
+scratch/
+
+# Visual Studio 2015/2017 cache directory
+.vs/
+# Other VS directories
+TestResults/
+*.vspscc
+*.vssscc
+App_Data/*.ldf
+App_Data/*.mdf
+
+# NuGet Packages
+*.nuget.props
+*.nuget.targets
+packages/
+nuget.exe
+
+# Node.js / npm
+node_modules/
+npm-debug.log
+
+# Uploaded/Dynamic data folders
+App_Data/Uploads/
+Uploads/*
+!Uploads/Web.config
+
+# Rider/JetBrains/VS Code
+.idea/
+.vscode/

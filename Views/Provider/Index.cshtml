@@ -1,0 +1,257 @@
+@model IEnumerable<CallUp.Models.ServiceRequest>
+@{
+    ViewBag.Title = "Provider Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* ── Bid Submission Modal (Premium V2) ──────────────── *@
+<div id="bidOverlay" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 480px;">
+        <div class="modal-header">
+            <h3 class="font-display" style="font-size: 1.4rem;">
+                <i class="fa-solid fa-gavel text-gradient" style="margin-right:12px;"></i>
+                <span id="bidModalTitle">Place Your Bid</span>
+            </h3>
+            <button onclick="closeBidModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        @using (Html.BeginForm("PlaceBid", "Provider", FormMethod.Post, new { id = "bidForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="requestId" id="bidRequestId">
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Your Quote (total for job)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted);">R</span>
+                    <input type="number" name="amount" id="bidAmount" step="0.01" min="0" class="form-control" placeholder="0.00" style="padding-left: 40px;" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Arrival Date / ETA</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i></span>
+                    <input type="text" name="eta" id="bidEta" class="form-control" placeholder="e.g. Tomorrow at 10am" style="padding-left: 40px;" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 32px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Message to Customer</label>
+                <textarea name="notes" rows="3" class="form-control" placeholder="Briefly describe your approach or availability..." style="resize: none;"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
+                <button type="button" onclick="closeBidModal()" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i> Send My Bid
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dashboard-content fade-in">
+    @* ── KEY STATS SUMMARY ── *@
+    <div class="stat-grid" style="margin-bottom: 48px;">
+        <div class="stat-card-v2">
+            <div class="stat-icon-v2 bg-indigo"><i class="fa-solid fa-wallet"></i></div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Earnings</div>
+                <div style="font-weight: 800; font-size: 1.4rem;">R 0.00</div>
+            </div>
+        </div>
+        <div class="stat-card-v2">
+            <div class="stat-icon-v2 bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Completed</div>
+                <div style="font-weight: 800; font-size: 1.4rem;">0 <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">Jobs</span></div>
+            </div>
+        </div>
+        <div class="stat-card-v2">
+            <div class="stat-icon-v2 bg-amber"><i class="fa-solid fa-star"></i></div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Rating</div>
+                <div style="font-weight: 800; font-size: 1.4rem;">5.0 <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">/ 5</span></div>
+            </div>
+        </div>
+    </div>
+
+    @* ── SECTION: OPPORTUNITIES ── *@
+    <div id="section-opportunities" class="dashboard-section">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+            <div>
+                <h2 class="font-display" style="font-size: 1.8rem; margin-bottom: 4px;">Available Opportunities</h2>
+                <p style="color: var(--text-muted);">Browse jobs matching your skills in your service area.</p>
+            </div>
+            <div class="pill pill-success" style="padding: 8px 16px;"><i class="fa-solid fa-rotate"></i> Live Updates</div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="stat-grid">
+                @foreach (var job in Model)
+                {
+                    <div class="glass-card" style="padding: 28px; border-radius: 24px; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                            <div class="stat-icon-v2 bg-indigo" style="width: 48px; height: 48px; border-radius: 14px; font-size: 1.2rem;">
+                                @{
+                                    var icon = "fa-wrench";
+                                    switch(job.CategoryName) {
+                                        case "Cleaning": icon="fa-broom"; break;
+                                        case "Plumbing": icon="fa-faucet"; break;
+                                        case "Electrical": icon="fa-bolt"; break;
+                                        case "Gardening": icon="fa-leaf"; break;
+                                    }
+                                }
+                                <i class="fa-solid @icon"></i>
+                            </div>
+                            <span class="pill pill-success" style="font-size: 0.65rem;">New Request</span>
+                        </div>
+
+                        <h4 class="font-display" style="font-size: 1.2rem; margin-bottom: 8px;">@job.Title</h4>
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            @job.CategoryName • #@job.Id
+                        </div>
+                        
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.6; min-height: 4.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">@job.Description</p>
+                        
+                        @if (job.ImagePaths.Any())
+                        {
+                            <div style="display: flex; gap: 8px; margin-bottom: 24px;">
+                                @foreach (var img in job.ImagePaths)
+                                {
+                                    <div style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border);">
+                                        <img src="@Url.Content("~" + img)" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" onclick="event.stopPropagation(); window.open(this.src, '_blank')">
+                                    </div>
+                                }
+                            </div>
+                        }
+                        
+                        <div style="background: var(--bg-arctic); border-radius: 20px; padding: 20px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.85rem;">
+                            <div title="Location"><i class="fa-solid fa-map-pin" style="color: var(--primary); margin-right: 8px; width: 14px;"></i> @job.Location</div>
+                            <div title="Target Date"><i class="fa-solid fa-calendar" style="color: var(--primary); margin-right: 8px; width: 14px;"></i> @(job.ServiceDate?.ToString("dd MMM") ?? "Flexible")</div>
+                            <div title="Client Budget"><i class="fa-solid fa-tag" style="color: var(--primary); margin-right: 8px; width: 14px;"></i> @job.PriceRange</div>
+                            @if (job.LowestBid.HasValue) {
+                                <div style="color: var(--secondary); font-weight: 700;"><i class="fa-solid fa-arrow-down" style="margin-right: 8px; width: 14px;"></i> Low: R@job.LowestBid.Value.ToString("0")</div>
+                            }
+                        </div>
+
+                        @if (job.MyBidAmount.HasValue) {
+                            <button class="btn btn-outline" onclick="openBidModal(@job.Id, @job.MyBidAmount.Value, '@job.MyBidEta')" style="width: 100%; border-color: var(--secondary); color: var(--secondary);">
+                                <i class="fa-solid fa-pen-to-square"></i> Update Bid (R @job.MyBidAmount.Value.ToString("0.00"))
+                            </button>
+                        } else {
+                            <button class="btn btn-primary" onclick="openBidModal(@job.Id)" style="width: 100%;">
+                                <i class="fa-solid fa-gavel"></i> Place My Bid
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="glass-card" style="padding: 100px 40px; text-align: center;">
+                <div style="width: 80px; height: 80px; background: var(--bg-arctic); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--border);">
+                    <i class="fa-solid fa-inbox fa-2x"></i>
+                </div>
+                <h3 class="font-display" style="font-size: 1.5rem; margin-bottom: 12px;">No Open Jobs</h3>
+                <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">We don't have any open requests in your area right now. We'll notify you via email when matching jobs arrive.</p>
+            </div>
+        }
+    </div>
+
+    @* ── SECTION: MY ACTIVE JOBS ── *@
+    <div id="section-my-jobs" class="dashboard-section" style="display:none;">
+        <h2 class="font-display" style="font-size: 2rem; margin-bottom: 32px;">My Confirmed Jobs</h2>
+        @{ var myJobs = ViewBag.MyJobs as List<CallUp.Models.ServiceRequest>; }
+        
+        @if (myJobs != null && myJobs.Any())
+        {
+            <div class="stat-grid">
+                @foreach (var job in myJobs)
+                {
+                    <div class="glass-card" style="padding: 28px; border-radius: 24px; border-left: 6px solid var(--secondary);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span class="pill pill-success" style="background:#EEF2FF; color:var(--primary);">Job In Progress</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">#JOB-@job.Id</span>
+                        </div>
+                        <h4 class="font-display" style="font-size: 1.15rem; margin-bottom: 8px;">@job.Title</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">@job.Description</p>
+                        <div style="display: flex; gap: 16px; font-size: 0.85rem; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <div style="font-weight: 700;"><i class="fa-solid fa-calendar"></i> @(job.ServiceDate?.ToString("dd MMM") ?? "Flexible")</div>
+                            <div style="color: var(--text-muted);">Category: @job.CategoryName</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="glass-card" style="padding: 80px 40px; text-align: center;">
+                <p style="color: var(--text-muted);">You haven't been hired for any jobs yet. Keep bidding!</p>
+            </div>
+        }
+    </div>
+
+    @* ── SECTION: EARNINGS & SETTINGS ── *@
+    <div id="section-earnings" class="dashboard-section" style="display:none;">
+        <h2 class="font-display" style="font-size: 2rem; margin-bottom: 32px;">Earnings History</h2>
+        <div class="glass-card" style="padding: 100px 40px; text-align: center;">
+            <i class="fa-solid fa-landmark" style="font-size: 3rem; color: var(--border); margin-bottom: 24px;"></i>
+            <p style="color: var(--text-muted);">No payment history found. Complete your first job to start earning.</p>
+        </div>
+    </div>
+
+    <div id="section-settings" class="dashboard-section" style="display:none;">
+        <h2 class="font-display" style="font-size: 2rem; margin-bottom: 32px;">Provider Profile</h2>
+        <div class="glass-card" style="max-width: 600px; padding: 48px;">
+            <div style="display: flex; align-items: center; gap: 32px;">
+                <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--secondary); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800;">
+                    @User.Identity.Name.Substring(0, 1).ToUpper()
+                </div>
+                <div>
+                    <h4 class="font-display" style="font-size: 1.4rem; margin-bottom: 4px;">@(ViewBag.FullName ?? User.Identity.Name.Split('@')[0])</h4>
+                    <p style="color: var(--text-muted); margin-bottom: 8px;">@User.Identity.Name</p>
+                    <span class="pill pill-success">Verified Provider</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function switchSection(name, el) {
+        document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const target = document.getElementById('section-' + name);
+        if(target) {
+            target.style.display = 'block';
+            target.classList.add('fade-in');
+        }
+        if (el) el.classList.add('active');
+    }
+
+    function openBidModal(requestId, amount, eta) {
+        document.getElementById('bidRequestId').value = requestId;
+        document.getElementById('bidAmount').value = amount || "";
+        document.getElementById('bidEta').value = eta || "";
+        
+        if (amount) {
+            document.getElementById('bidModalTitle').innerText = "Update Your Bid";
+        } else {
+            document.getElementById('bidModalTitle').innerText = "Place a Bid";
+        }
+        $('#bidOverlay').addClass('active');
+    }
+
+    function closeBidModal() { $('#bidOverlay').removeClass('active'); }
+
+    // Close on overlay click
+    $('#bidOverlay').on('click', function(e) {
+        if (e.target === this) closeBidModal();
+    });
+</script>
+}

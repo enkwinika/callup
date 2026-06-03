@@ -1,0 +1,149 @@
+@{
+    ViewBag.Title = "System Health & Logs";
+}
+
+<div class="dashboard-container modern-glow">
+    <div class="dashboard-header animate__animated animate__fadeIn">
+        <div class="header-content">
+            <h1><i class="fas fa-heartbeat text-danger"></i> System Health</h1>
+            <p class="text-muted">Monitor system exceptions and user activity logs.</p>
+        </div>
+        <div class="header-actions">
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <form id="clearLogsForm" action="@Url.Action("ClearErrorLogs", "Admin")" method="post" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <button type="button" class="btn btn-danger" onclick="confirmClearLogs()">
+                    <i class="fas fa-trash-alt"></i> Clear Error Logs
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Error Logs Section -->
+    <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h3><i class="fas fa-exclamation-triangle text-warning"></i> Recent System Errors</h3>
+            <span class="badge badge-danger">Last 100 Errors</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive custom-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Controller/Action</th>
+                            <th>User ID</th>
+                            <th>Message</th>
+                            <th>Stack Trace</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ErrorLogs != null && ((List<dynamic>)ViewBag.ErrorLogs).Count > 0)
+                        {
+                            foreach (var log in ViewBag.ErrorLogs)
+                            {
+                                <tr>
+                                    <td>#@log.id</td>
+                                    <td><small>@log.date.ToString("yyyy-MM-dd HH:mm")</small></td>
+                                    <td><span class="badge badge-info">@log.controller/@log.action</span></td>
+                                    <td>@(log.userId ?? "N/A")</td>
+                                    <td><strong class="text-danger">@log.message</strong></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-link" onclick="toggleStack('@log.id')">View Stack</button>
+                                        <div id="stack-@log.id" class="stack-trace-popup" style="display:none;">
+                                            <pre>@log.stackTrace</pre>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4">No system errors recorded. System is healthy! ✨</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Logs Section -->
+    <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s; margin-top: 2rem;">
+        <div class="card-header">
+            <h3><i class="fas fa-history text-primary"></i> User Audit Trail</h3>
+            <span class="badge badge-primary">Last 100 Activities</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive custom-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in ViewBag.ActivityLogs)
+                        {
+                            <tr>
+                                <td>#@log.id</td>
+                                <td><small>@log.date.ToString("yyyy-MM-dd HH:mm")</small></td>
+                                <td><strong>@log.userName</strong></td>
+                                <td><span class="status-badge status-active">@log.action</span></td>
+                                <td>@log.details</td>
+                                <td><code>@log.ip</code></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stack-trace-popup {
+        background: #1e1e1e;
+        color: #dcdcdc;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 11px;
+        max-width: 400px;
+        max-height: 200px;
+        overflow: auto;
+        position: absolute;
+        z-index: 100;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    
+    .status-active { background: #e3f2fd; color: #1976d2; }
+    
+    pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+</style>
+
+<script>
+    function toggleStack(id) {
+        var el = document.getElementById('stack-' + id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        
+        // Close others
+        document.querySelectorAll('.stack-trace-popup').forEach(p => {
+            if (p.id !== 'stack-' + id) p.style.display = 'none';
+        });
+    }
+
+    async function confirmClearLogs() {
+        if (await premiumConfirm('Are you sure you want to clear all error logs?', 'Clear Logs', 'fa-trash-can')) {
+            document.getElementById('clearLogsForm').submit();
+        }
+    }
+</script>

@@ -1,0 +1,146 @@
+@{
+    ViewBag.Title = "Sign In";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page fade-in">
+    <div class="glass-card" style="max-width: 550px; width: 100%; padding: 48px; border-radius: 32px;">
+        @* Brand Hub *@
+        <div style="text-align: center; margin-bottom: 40px;">
+            <a href="@Url.Action("Index", "Home")">
+                <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 150px; margin-bottom: 24px;">
+            </a>
+            <p class="text-muted mt-3" style="font-size: 12px;">This is a simulated PayFast environment for CallUp.</p>
+            <h1 class="font-display" style="font-size: 1.8rem; margin-bottom: 8px;">Welcome Back</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Please enter your credentials to access your dashboard</p>
+        </div>
+
+        @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { id = "loginForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Username</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-at" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 0.9rem;"></i>
+                    <input type="email" name="Email" class="form-control" placeholder="name@domain.com" style="padding-left: 48px;" required autofocus value="">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Password</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-key" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 0.9rem;"></i>
+                    <input type="password" name="Password" class="form-control" placeholder="Enter Your Password" style="padding-left: 48px;" required value="">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; font-size: 0.9rem;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-muted);">
+                    <input type="checkbox" name="RememberMe" value="true" style="width: 18px; height: 18px; border-radius: 6px;">
+                    Keep me signed in
+                </label>
+                <a href="@Url.Action("ForgotPassword", "Account")" style="color: var(--primary); font-weight: 700;">Forgot?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 56px; font-size: 1.1rem; border-radius: 16px;">
+                Access Dashboard <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i>
+            </button>
+        }
+
+        @* DEMO ACCESS SECTION - Automatically hidden on live domains *@
+        @if (System.Configuration.ConfigurationManager.AppSettings["EnableDemoAccess"] == "true")
+        {
+            <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border);">
+                <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Sign Out of CallUp</div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span class="pill pill-warning" style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+                        <i class="fa-solid fa-bolt" style="margin-right: 4px;"></i> Quick Demo Access
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    @* Primary Demo Roles *@
+                    <button type="button" onclick="quickLogin('admin@admin.co.za','Test@123')" class="btn-demo" title="System Admin">
+                        <i class="fa-solid fa-shield-halved"></i> <small>Admin</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('enkwinika@gmail.com','Test@123')" class="btn-demo" title="Regular User">
+                        <i class="fa-solid fa-user"></i> <small>User</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('abc@gmail.com','Test@123')" class="btn-demo" title="Professional Provider">
+                        <i class="fa-solid fa-wrench"></i> <small>Pro</small>
+                    </button>
+
+                    <p>You are paying <strong>CallUp Home Services</strong></p>
+                    @* Test Customers Section *@
+                    <button type="button" onclick="quickLogin('customer1@test.com','Test@123')" class="btn-demo" title="customer1@test.com">
+                        <i class="fa-solid fa-user-check"></i> <small>User 1</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('customer2@test.com','Test@123')" class="btn-demo" title="customer2@test.com">
+                        <i class="fa-solid fa-user-check"></i> <small>User 2</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('customer3@test.com','Test@123')" class="btn-demo" title="customer3@test.com">
+                        <i class="fa-solid fa-user-check"></i> <small>User 3</small>
+                    </button>
+
+                    @* Test Providers Section *@
+                    <button type="button" onclick="quickLogin('provider1@test.com','Test@123')" class="btn-demo" title="provider1@test.com">
+                        <i class="fa-solid fa-tools"></i> <small>Pro 1</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('provider2@test.com','Test@123')" class="btn-demo" title="provider2@test.com">
+                        <i class="fa-solid fa-tools"></i> <small>Pro 2</small>
+                    </button>
+                    <button type="button" onclick="quickLogin('provider3@test.com','Test@123')" class="btn-demo" title="provider3@test.com">
+                        <i class="fa-solid fa-tools"></i> <small>Pro 3</small>
+                    </button>
+                </div>
+            </div>
+        }
+
+        <div style="text-align: center; margin-top: 32px;">
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Need a professional account? <a href="@Url.Action("Register", "Account")" style="color: var(--primary); font-weight: 800;">Register Now</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-demo {
+        border: 1px solid var(--border);
+        background: white;
+        border-radius: 12px;
+        padding: 12px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-muted);
+    }
+    .btn-demo i { font-size: 1.1rem; }
+    .btn-demo small { font-weight: 700; font-size: 0.65rem; text-transform: uppercase; }
+    .btn-demo:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+</style>
+
+<script>
+    function quickLogin(email, password) {
+        if (window.logx) logx("Initiating Quick Login for: " + email);
+        document.querySelector('input[name="Email"]').value = email;
+        document.querySelector('input[name="Password"]').value = password;
+        document.getElementById('loginForm').submit();
+    }
+
+    $(function() {
+        $('#loginForm').on('submit', function() {
+            if (window.logx) logx("Login Form Submitted. Email: " + $('input[name="Email"]').val());
+        });
+    });
+</script>

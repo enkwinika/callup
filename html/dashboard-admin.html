@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <a href="index.html" class="logo">On<span>call</span></a>
+            <nav class="sidebar-nav">
+                <a href="dashboard-admin.html" class="nav-item active"><i class="fa-solid fa-user-shield"></i> <span>Verifications</span></a>
+                <a href="admin-users.html" class="nav-item"><i class="fa-solid fa-users"></i> <span>User Management</span></a>
+                <a href="admin-disputes.html" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Disputes</span></a>
+                <a href="admin-analytics.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> <span>Analytics</span></a>
+            </nav>
+            <a href="login.html" class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+        </aside>
+
+        <main class="main-content">
+            <header class="dash-header fade-up">
+                <div class="header-info">
+                    <h1>Administrator Control Center</h1>
+                    <p>System Status: <span style="color:var(--secondary); font-weight:700;">Healthy</span> | Nodes: CPT, JHB</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar-sm" style="background: #1E293B;">AD</div>
+                </div>
+            </header>
+
+            <div class="view-section active" id="view-verifications">
+                <div class="stats-grid fade-up" style="animation-delay: 0.1s;">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">8,420</span>
+                            <span class="stat-label">Total Users</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">R1.2M</span>
+                            <span class="stat-label">Platform Revenue</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">14</span>
+                            <span class="stat-label">Pending Verifications</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-section fade-up" style="animation-delay: 0.2s;">
+                    <div class="table-header">
+                        <h3>Provider Verification Queue</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Provider Name</th>
+                                <th>ID Status</th>
+                                <th>Category</th>
+                                <th>Joined On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Dumisan Electric</strong></td>
+                                <td><span class="status-badge status-pending">Pending Review</span></td>
+                                <td>Electrical</td>
+                                <td>2 hours ago</td>
+                                <td>
+                                    <button class="btn btn-secondary btn-sm accept-verif" style="padding: 4px 12px; font-size: 0.8rem; background:var(--secondary); color:white;">Approve</button>
+                                    <button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.8rem; border-color:#EF4444; color:#EF4444;">Reject</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Phindile Cleaning</strong></td>
+                                <td><span class="status-badge status-pending">Pending Review</span></td>
+                                <td>Cleaning</td>
+                                <td>Yesterday</td>
+                                <td>
+                                    <button class="btn btn-secondary btn-sm accept-verif" style="padding: 4px 12px; font-size: 0.8rem; background:var(--secondary); color:white;">Approve</button>
+                                    <button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.8rem; border-color:#EF4444; color:#EF4444;">Reject</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-users">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Registered Users</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Total Spent/Earned</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alan Miller</td>
+                                <td>Customer</td>
+                                <td>R4,200</td>
+                                <td><button class="btn btn-outline btn-sm">Edit</button></td>
+                            </tr>
+                            <tr>
+                                <td>Sipho Garden Service</td>
+                                <td>Provider</td>
+                                <td>R12,500</td>
+                                <td><button class="btn btn-outline btn-sm">Edit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-disputes">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Open Support Tickets</h3>
+                    </div>
+                    <p style="color:var(--text-muted); text-align:center; padding: 40px;">No active disputes. System is clean!</p>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-analytics">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Platform Growth</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        <i class="fa-solid fa-chart-line" style="font-size: 2rem; margin-right: 15px;"></i> Monthly Growth KPI Highlights Placeholder
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

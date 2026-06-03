@@ -1,0 +1,54 @@
+<aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-brand" style="margin-bottom: 0px; padding-left: 0px;">
+        <a href="@Url.Action("Index", "Home")" class="logo" style="display:flex; align-items:center; text-decoration:none;">
+            <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 75px; width: auto; display:block;">
+        </a>
+    </div>
+
+    <div class="sidebar-section-label">Work</div>
+    <nav class="sidebar-nav">
+        <a href="javascript:void(0)" class="nav-item active" onclick="switchSection('opportunities', this)">
+            <i class="fa-solid fa-briefcase"></i> <span>Opportunities</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('my-jobs', this)">
+            <i class="fa-solid fa-list-check"></i> <span>My Jobs</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('messages', this)">
+            <i class="fa-solid fa-message"></i> <span>Messages</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('earnings', this)">
+            <i class="fa-solid fa-wallet"></i> <span>Earnings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-section-label" style="margin-top: 16px;">Account</div>
+    <nav class="sidebar-nav">
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('profile', this)">
+            <i class="fa-solid fa-user"></i> <span>Profile</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchSection('settings', this)">
+            <i class="fa-solid fa-sliders"></i> <span>Settings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" style="background: var(--secondary);">
+                @User.Identity.Name.Substring(0, 1).ToUpper()
+            </div>
+            <div class="user-meta">
+                <div class="user-name">@User.Identity.Name.Split('@')[0]</div>
+                <div class="user-role-label">Service Provider</div>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <a href="javascript:document.getElementById('logoutForm').submit()" class="nav-item logout-btn" title="Logout session">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+            </a>
+        }
+    </div>
+</aside>
+

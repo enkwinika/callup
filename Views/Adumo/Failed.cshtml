@@ -1,0 +1,112 @@
+@{
+    ViewBag.Title = "Payment Unsuccessful";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="result-hero-wrap d-flex align-items-center justify-content-center" style="min-height: 90vh; padding: 60px 20px; width: 100%;">
+    <div class="result-hero-container text-center" style="max-width: 580px; width: 100%; margin: 0 auto;">
+        
+        <!-- Brand Identity -->
+        <div class="brand-logo-fade mb-5 pb-4">
+            <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 80px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.08));">
+        </div>
+
+        <!-- Hero Content -->
+        <div class="premium-result-card animate__animated animate__fadeInUp" style="background: white; border-radius: 40px; box-shadow: 0 60px 120px -20px rgba(15, 23, 42, 0.15); padding: 80px 48px; border: 1px solid var(--border); position: relative; overflow: visible;">
+            
+            <div class="error-seal-wrap mb-5">
+                <div class="seal-outer-error">
+                    <div class="seal-inner-error">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="title-wrap mb-4">
+                <h1 class="font-display" style="font-size: 3.2rem; color: #0F172A; letter-spacing: -0.05em; font-weight: 850; line-height: 1;">Unable to Process</h1>
+            </div>
+<br /><br />
+            <div class="message-wrap mb-5">
+                <p class="text-muted mx-auto" style="font-size: 1.2rem; line-height: 1.6; max-width: 420px; font-weight: 500;">
+                    We couldn't finalize your payment for <span class="fw-bold text-dark">Request #@ViewBag.RequestId</span>. Please review the details below.
+                </p>
+            </div>
+<br /><br />
+            <!-- Modern Digital Receipt -->
+            <div class="digital-receipt p-4 text-start mb-5" style="background: #FFFBEB; border: 2px solid #FEF3C7; border-radius: 24px; padding: 20px;">
+                 <h6 class="fw-bold mb-3" style="color: #B45309; display: flex; align-items: center; gap: 10px; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Common Issues
+                </h6>
+                <ul class="text-muted mb-0 small" style="padding-left: 20px; line-height: 2.2; font-weight: 500;">
+                    <li>Transaction was cancelled or timed out.</li>
+                    <li>Incorrect card details or insufficient funds.</li>
+                    <li>Authorization was declined by your bank.</li>
+                </ul>
+            </div>
+<br /><br />
+            <div class="action-footer mt-4">
+                <a href="@Url.Action("Customer", "Dashboard")" class="btn btn-hero-error px-5 py-4 w-100" style="background: #EF4444; color: white; border-radius: 20px; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.01em; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 40px rgba(239, 68, 68, 0.25); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 12px; border: none;">
+                    Return to Dashboard
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="help-text mt-5 pt-3 opacity-75">
+            <span class="text-muted font-display" style="font-weight: 500;">Need help with your payment?</span>
+            <a href="#" class="ms-2 fw-bold text-dark text-decoration-none border-bottom border-2 border-danger">Contact Support</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .font-display { font-family: 'Outfit', sans-serif; }
+    
+    .seal-outer-error {
+        width: 110px;
+        height: 110px;
+        background: #FEF2F2;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .seal-inner-error {
+        width: 68px;
+        height: 68px;
+        background: #EF4444;
+        color: white;
+        border-radius: 36% 64% 70% 30% / 30% 30% 70% 70%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        box-shadow: 0 12px 24px rgba(239, 68, 68, 0.3);
+        animation: shakeError 1.2s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    .btn-hero-error:hover {
+        background: #DC2626;
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(239, 68, 68, 0.4);
+    }
+
+    @@keyframes shakeError {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .brand-logo-fade {
+        animation: fadeInDown 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    @@media (max-width: 768px) {
+        .premium-result-card { padding: 50px 24px; }
+        h1 { font-size: 2.5rem !important; }
+        .result-hero-wrap { padding-top: 20px; }
+    }
+</style>

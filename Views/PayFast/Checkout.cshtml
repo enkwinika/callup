@@ -1,0 +1,36 @@
+@{
+    ViewBag.Title = "PayFast - Secure Checkout";
+    Layout = null; // No shared layout for simulated gateway
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>PayFast Simulation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body { background: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+        .pf-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        .pf-logo { color: #f26522; font-size: 32px; font-weight: bold; margin-bottom: 20px; }
+        .amount { font-size: 24px; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="pf-card">
+        <div class="pf-logo">Pay<span>Fast</span></div>
+        <p>You are paying <strong>CallUp Home Services</strong></p>
+        <div class="amount">R @ViewBag.Amount</div>
+        
+        @using (Html.BeginForm("Notify", "PayFast", FormMethod.Post))
+        {
+            <input type="hidden" name="bidId" value="@ViewBag.BidId" />
+            <button type="submit" class="btn btn-primary w-100 py-3" style="background-color: #f26522; border: none;">
+                Complete Payment
+            </button>
+        }
+        
+        <p class="text-muted mt-3" style="font-size: 12px;">This is a simulated PayFast environment for CallUp.</p>
+    </div>
+</body>
+</html>

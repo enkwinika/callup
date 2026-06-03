@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="index.html" class="logo" style="display: block; margin-bottom: 24px;">On<span>call</span></a>
+                <h2>Create Account</h2>
+                <p>Join South Africa's leading service marketplace.</p>
+            </div>
+
+            <div class="auth-tabs" id="register-tabs">
+                <button class="auth-tab active" data-role="customer">I'm a Customer</button>
+                <button class="auth-tab" data-role="provider">I'm a Provider</button>
+            </div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="john@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" placeholder="081 234 5678" required>
+                </div>
+
+                <!-- Provider Specific Fields -->
+                <div id="provider-fields" class="role-specific">
+                    <div class="form-group">
+                        <label>SA ID Number</label>
+                        <input type="text" placeholder="YYMMDDSSSSZZZ">
+                    </div>
+                    <div class="form-group">
+                        <label>Main Service Category</label>
+                        <select>
+                            <option value="">Select a category</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="gardening">Gardening</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Min. 8 characters" required>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; color: var(--text-muted);">
+                    <input type="checkbox" style="width: auto; margin-top: 4px;" required>
+                    <label>I agree to the Terms of Service and Privacy Policy (POPIA compliant).</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="login.html">Sign in instead</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

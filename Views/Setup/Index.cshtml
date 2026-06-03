@@ -1,0 +1,410 @@
+@{
+    ViewBag.Title = "CallUp Database Setup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container fade-in" style="max-width: 800px; padding: 100px 0;">
+    <div class="glass-card" style="padding: 60px; border-radius: 40px; text-align: center;">
+        <div style="margin-bottom: 40px;">
+            <div style="width: 80px; height: 80px; background: var(--primary-light); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 24px;">
+                <i class="fa-solid fa-database"></i>
+            </div>
+            <h1 class="font-display" style="font-size: 2.5rem; margin-bottom: 16px;">Environment Setup</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Initialize your production database schema and seed data.</p>
+        </div>
+
+        <div id="setup-initial">
+            @Html.AntiForgeryToken()
+            <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); color: #d97706; padding: 20px; border-radius: 20px; margin-bottom: 32px; text-align: left;">
+                <h4 style="margin-bottom: 8px; font-weight: 800;"><i class="fa-solid fa-triangle-exclamation"></i> Production Warning</h4>
+                <p style="margin: 0; font-size: 0.9rem;">This will execute <strong>init_db.sql</strong> on your live server. It uses <code>IF NOT EXISTS</code> logic, so it is safe to run on an existing database, but always ensure you have a backup if data exists.</p>
+            </div>
+
+            <button onclick="startSetup()" class="btn btn-primary" style="height: 64px; padding: 0 48px; font-size: 1.2rem; border-radius: 20px;">
+                Initialize Live Database <i class="fa-solid fa-bolt" style="margin-left: 12px;"></i>
+            </button>
+        </div>
+
+        <div id="setup-progress" style="display: none;">
+            <div class="loader" style="width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 32px;"></div>
+            <h3 style="margin-bottom: 8px;">Running SQL Script...</h3>
+            <p style="color: var(--text-muted);">Configuring tables, relationships, and seed data.</p>
+        </div>
+
+        <div id="setup-results" style="display: none; text-align: left; margin-top: 40px;">
+            <div id="result-status" class="pill" style="margin-bottom: 24px;"></div>
+            <div style="background: var(--bg-arctic); border: 1px solid var(--border); border-radius: 20px; padding: 24px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;" id="setup-logs"></div>
+            
+            <div style="margin-top: 32px; text-align: center;">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-outline" style="border-radius: 16px;">Go to Homepage</a>
+            </div>
+        </div>
+
+        <!-- Dangerous Operations -->
+        <div style="margin-top: 48px; padding-top: 48px; border-top: 1px solid #fee2e2; text-align: left;">
+            <h3 class="font-display" style="color: #ef4444; font-size: 1.4rem; margin-bottom: 8px;">Danger Zone</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Use these tools only if the database is in a broken state and you need to wipe all data.</p>
+            
+            <button onclick="forceReset()" class="btn" style="background: white; border: 1px solid #fecaca; color: #ef4444; padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                <i class="fa-solid fa-trash-can" style="margin-right: 8px;"></i> Force Reset & Recreate Database
+            </button>
+        </div>
+
+        <!-- Database Inspector Section -->
+        <div class="inspector-section" style="margin-top: 48px; border-top: 1px solid var(--border); padding-top: 48px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+                <div>
+                    <h2 class="font-display" style="font-size: 1.8rem; margin-bottom: 8px;">Database Inspector</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">View raw table data for troubleshooting.</p>
+                </div>
+                <button onclick="loadTables()" class="btn btn-outline" style="border-radius: 12px; padding: 12px 24px; font-weight: 600;">
+                    <i class="fa-solid fa-arrows-rotate" style="margin-right: 8px;"></i> Refresh Tables
+                </button>
+            </div>
+
+            <div id="table-list-container" style="background: var(--bg-arctic); border: 1px solid var(--border); border-radius: 30px; padding: 8px; min-height: 200px;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+                    <tbody id="table-list-body">
+                        <tr>
+                            <td style="text-align: center; padding: 60px; color: var(--text-muted);">
+                                <i class="fa-solid fa-database" style="font-size: 2rem; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                Click <strong>Refresh Tables</strong> to inspect the database.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function forceReset() {
+            if (!await premiumConfirm('DANGER: This will PERMANENTLY DELETE ALL DATA in the production database. Are you absolutely sure?', 'Critical Warning', 'fa-triangle-exclamation')) return;
+            if (!await premiumConfirm('FINAL WARNING: This action cannot be undone. Proceed with full database wipe?', 'Ultimate Warning', 'fa-burst')) return;
+
+            const initial = document.getElementById('setup-initial');
+            const progress = document.getElementById('setup-progress');
+            const results = document.getElementById('setup-results');
+            const logs = document.getElementById('setup-logs');
+            const status = document.getElementById('result-status');
+
+            initial.style.display = 'none';
+            progress.style.display = 'block';
+            progress.querySelector('h3').innerText = 'Wiping and Recreating...';
+
+            $.ajax({
+                url: '@Url.Action("ResetDatabase", "Setup")',
+                type: 'POST',
+                timeout: 180000,
+                data: {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    progress.style.display = 'none';
+                    results.style.display = 'block';
+
+                    if (response.success) {
+                        status.innerText = 'Full Reset Successful';
+                        status.className = 'pill pill-success';
+                    } else {
+                        status.innerText = 'Reset Failed';
+                        status.className = 'pill pill-danger';
+                    }
+
+                    if (response.logs) {
+                        logs.innerHTML = response.logs.map(l => `<div>> ${l}</div>`).join('');
+                    } else if (response.message) {
+                        logs.innerHTML = `<div>> ERROR: ${response.message}</div>`;
+                    }
+                },
+                error: function() {
+                    progress.style.display = 'none';
+                    results.style.display = 'block';
+                    status.innerText = 'Network Error';
+                    status.className = 'pill pill-danger';
+                    logs.innerHTML = '<div>> Critical failure during reset operation. Check server logs.</div>';
+                }
+            });
+        }
+
+        async function startSetup() {
+            if (!await premiumConfirm('Are you sure you want to initialize the production database?', 'Initialize System', 'fa-database')) return;
+
+            const initial = document.getElementById('setup-initial');
+            const progress = document.getElementById('setup-progress');
+            const results = document.getElementById('setup-results');
+            const logs = document.getElementById('setup-logs');
+            const status = document.getElementById('result-status');
+
+            initial.style.display = 'none';
+            progress.style.display = 'block';
+
+            $.ajax({
+                url: '@Url.Action("RunSetup", "Setup")',
+                type: 'POST',
+                timeout: 120000,
+                data: {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    progress.style.display = 'none';
+                    results.style.display = 'block';
+
+                    if (response.success) {
+                        status.innerText = 'Initialization Successful';
+                        status.className = 'pill pill-success';
+                    } else {
+                        status.innerText = 'Initialization Failed';
+                        status.className = 'pill pill-danger';
+                    }
+
+                    if (response.logs) {
+                        logs.innerHTML = response.logs.map(l => `<div>> ${l}</div>`).join('');
+                    } else if (response.message) {
+                        logs.innerHTML = `<div>> ERROR: ${response.message}</div>`;
+                    }
+                },
+                error: function() {
+                    progress.style.display = 'none';
+                    results.style.display = 'block';
+                    status.innerText = 'Network Error';
+                    status.className = 'pill pill-danger';
+                    logs.innerHTML = '<div>> Critical failure communicating with the server.</div>';
+                }
+            });
+        }
+
+        function loadTables() {
+            const tbody = document.getElementById('table-list-body');
+            tbody.innerHTML = '<tr><td style="text-align: center; padding: 60px;"><div class="loader-sm"></div><div style="margin-top: 12px; color: var(--text-muted);">Loading tables...</div></td></tr>';
+
+            $.get('@Url.Action("GetTables", "Setup")', function(response) {
+                if (response.success === false) {
+                    tbody.innerHTML = `<tr><td style="color: #ef4444; text-align: center; padding: 60px;"><i class="fa-solid fa-circle-exclamation" style="font-size: 2rem; display: block; margin-bottom: 16px;"></i> Error: ${response.message}</td></tr>`;
+                    return;
+                }
+                
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td style="text-align: center; padding: 60px; color: var(--text-muted);"><i class="fa-solid fa-folder-open" style="font-size: 2rem; display: block; margin-bottom: 16px; opacity: 0.3;"></i> No tables found.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = response.map(name => `
+                    <tr id="row-${name}">
+                        <td style="padding: 16px 24px; background: white; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 32px; height: 32px; background: var(--bg-arctic); color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                                    <i class="fa-solid fa-table"></i>
+                                </div>
+                                <span style="font-weight: 700; color: var(--text); font-size: 1.05rem;">${name}</span>
+                            </div>
+                            <button onclick="viewData('${name}')" class="btn-inspector" id="btn-${name}">
+                                View Data <i class="fa-solid fa-chevron-down" style="margin-left: 8px; font-size: 0.8rem;"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr id="data-${name}" style="display: none;">
+                        <td style="padding: 16px 0 32px 0;">
+                            <div style="background: white; border: 1px solid var(--border); border-radius: 24px; padding: 24px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);">
+                                <div id="content-${name}"><div class="loader-sm"></div> Loading data...</div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        let tableMetadata = {};
+
+        function viewData(tableName) {
+            const dataRow = document.getElementById(`data-${tableName}`);
+            const content = document.getElementById(`content-${tableName}`);
+            const btn = document.getElementById(`btn-${tableName}`);
+            
+            if (dataRow.style.display === 'table-row') {
+                dataRow.style.display = 'none';
+                btn.classList.remove('active');
+                btn.innerHTML = `View Data <i class="fa-solid fa-chevron-down" style="margin-left: 8px; font-size: 0.8rem;"></i>`;
+                return;
+            }
+
+            dataRow.style.display = 'table-row';
+            btn.classList.add('active');
+            btn.innerHTML = `Hide Data <i class="fa-solid fa-chevron-up" style="margin-left: 8px; font-size: 0.8rem;"></i>`;
+            
+            content.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px;"><div class="loader-sm"></div> <div style="margin-top: 12px; color: var(--text-muted);">Fetching records...</div></div>';
+
+            $.get(`@Url.Action("GetTableData", "Setup")?tableName=${tableName}`, function(response) {
+                if (!response.success) {
+                    content.innerHTML = `<div style="color: #ef4444; padding: 20px;">Error: ${response.message}</div>`;
+                    return;
+                }
+
+                tableMetadata[tableName] = response.columns;
+                const pkCol = response.columns.find(c => c.IsPK);
+                
+                let html = `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <span style="font-weight: 700; color: var(--text-muted); font-size: 0.9rem;">${response.rows.length} Records Found</span>
+                    <button onclick="showRecordForm('${tableName}')" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 10px;">
+                        <i class="fa-solid fa-plus" style="margin-right: 8px;"></i> Add Record
+                    </button>
+                </div>`;
+
+                html += `<div id="form-container-${tableName}" style="display:none; margin-bottom:24px; padding:20px; background:var(--bg-arctic); border-radius:16px; border:1px solid var(--border);"></div>`;
+
+                if (response.rows.length === 0) {
+                    html += '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Table is empty.</div>';
+                } else {
+                    html += '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;"><thead><tr>';
+                    response.columns.forEach(col => {
+                        html += `<th style="text-align: left; padding: 12px; border-bottom: 2px solid var(--border);">${col.Name}</th>`;
+                    });
+                    html += '<th style="text-align: right; padding: 12px; border-bottom: 2px solid var(--border);">Actions</th>';
+                    html += '</tr></thead><tbody>';
+
+                    response.rows.forEach(row => {
+                        let pkVal = pkCol ? row[pkCol.Name] : null;
+                        html += `<tr>`;
+                        response.columns.forEach(col => {
+                            let val = row[col.Name];
+                            html += `<td style="padding: 12px; border-bottom: 1px solid var(--border-light); font-family: monospace;">${val === null ? '<small style="color:#ccc">NULL</small>' : val}</td>`;
+                        });
+                        html += `<td style="padding: 12px; border-bottom: 1px solid var(--border-light); text-align: right; white-space: nowrap;">`;
+                        if (pkCol) {
+                            html += `<button onclick="showRecordForm('${tableName}', '${encodeURIComponent(JSON.stringify(row))}')" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                            html += `<button onclick="deleteRecord('${tableName}', '${pkCol.Name}', '${pkVal}')" style="background:none; border:none; color:#ef4444; cursor:pointer;" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+                        }
+                        html += `</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                content.innerHTML = html;
+            });
+        }
+
+        function showRecordForm(tableName, rowDataJson = null) {
+            const container = document.getElementById(`form-container-${tableName}`);
+            const columns = tableMetadata[tableName];
+            const rowData = rowDataJson ? JSON.parse(decodeURIComponent(rowDataJson)) : null;
+            const pkCol = columns.find(c => c.IsPK);
+            
+            container.style.display = 'block';
+            let html = `<h4 style="margin-bottom: 16px;">${rowData ? 'Edit Record' : 'Add New Record'}</h4>`;
+            html += `<form id="crud-form-${tableName}" onsubmit="saveRecord(event, '${tableName}', '${pkCol ? pkCol.Name : ''}', '${rowData && pkCol ? rowData[pkCol.Name] : ''}')">`;
+            html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">`;
+            
+            columns.forEach(col => {
+                if (col.IsIdentity) return; // Skip identity columns
+                
+                let val = rowData ? rowData[col.Name] : '';
+                html += `<div>
+                    <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">${col.Name} ${col.IsPK ? '(PK)' : ''}</label>
+                    <input type="text" name="${col.Name}" value="${val === null ? '' : val}" class="form-control" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border);" ${col.IsPK && rowData ? 'readonly' : ''}>
+                </div>`;
+            });
+            
+            html += `</div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" onclick="document.getElementById('form-container-${tableName}').style.display='none'" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.85rem; margin-right: 8px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">Save Changes</button>
+                </div>
+            </form>`;
+            
+            container.innerHTML = html;
+        }
+
+        function saveRecord(e, tableName, pkCol, pkVal) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+
+            $.ajax({
+                url: '@Url.Action("SaveRecord", "Setup")',
+                type: 'POST',
+                data: {
+                    tableName: tableName,
+                    pkColumn: pkCol,
+                    pkValue: pkVal,
+                    jsonData: JSON.stringify(data),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(r) {
+                    if (r.success) {
+                        showNotification('Record saved successfully.', 'success');
+                        viewData(tableName); // Refresh
+                        viewData(tableName); // Toggle back (it will reopen)
+                    } else {
+                        showNotification('Error: ' + r.message, 'error');
+                    }
+                }
+            });
+        }
+
+        async function deleteRecord(tableName, pkCol, pkVal) {
+            if (!await premiumConfirm('Are you sure you want to delete this record?', 'Delete Record', 'fa-trash-can')) return;
+
+            $.ajax({
+                url: '@Url.Action("DeleteRecord", "Setup")',
+                type: 'POST',
+                data: {
+                    tableName: tableName,
+                    pkColumn: pkCol,
+                    pkValue: pkVal,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(r) {
+                    if (r.success) {
+                        showNotification('Record deleted.', 'success');
+                        viewData(tableName); // Refresh logic
+                        viewData(tableName); 
+                    } else {
+                        showNotification('Error: ' + r.message, 'error');
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        @@keyframes spin { to { transform: rotate(360deg); } }
+        .loader-sm {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.05);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        .btn-inspector {
+            background: var(--bg-arctic);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .btn-inspector:hover {
+            background: white;
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .btn-inspector.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        :root {
+            --border-light: #f1f5f9;
+        }
+    </style>
+}

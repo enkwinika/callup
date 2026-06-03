@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jobs | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <a href="index.html" class="logo">On<span>call</span></a>
+            <nav class="sidebar-nav">
+                <a href="dashboard-provider.html" class="nav-item"><i class="fa-solid fa-briefcase"></i> <span>Opportunities</span></a>
+                <a href="provider-jobs.html" class="nav-item active"><i class="fa-solid fa-list-check"></i> <span>My Jobs</span></a>
+                <a href="provider-earnings.html" class="nav-item"><i class="fa-solid fa-wallet"></i> <span>Earnings</span></a>
+                <a href="provider-settings.html" class="nav-item"><i class="fa-solid fa-sliders"></i> <span>Settings</span></a>
+            </nav>
+            <a href="login.html" class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+        </aside>
+
+        <main class="main-content">
+            <header class="dash-header">
+                <div class="header-info">
+                    <h1>My Active Jobs</h1>
+                    <p>Manage your current and upcoming appointments.</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar-sm" style="background: var(--secondary);">SG</div>
+                </div>
+            </header>
+
+            <div class="card-section">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Job</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Hedge Trimming</strong></td>
+                            <td>Alan Miller</td>
+                            <td><span class="status-badge status-active">Started</span></td>
+                            <td><button class="btn btn-secondary btn-sm" style="padding: 4px 12px; font-size: 0.8rem; background:var(--secondary); color:white;">Complete</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

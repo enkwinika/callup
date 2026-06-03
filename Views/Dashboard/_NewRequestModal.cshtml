@@ -1,0 +1,185 @@
+<!-- Modern Request Modal -->
+<div id="newRequestModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 600px; width: 90%; padding: 0;">
+        <div class="modal-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border);">
+            <h2 style="font-size: 1.5rem; margin: 0;">New Service Request</h2>
+            <button onclick="closeNewRequestModal()" class="modal-close">&times;</button>
+        </div>
+
+        <div style="padding: 32px; max-height: 80vh; overflow-y: auto;">
+            @using (Html.BeginForm("CreateRequest", "Customer", FormMethod.Post, new { id = "newRequestForm", enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Latitude" id="ReqLatitude" value="@ViewBag.Latitude">
+                <input type="hidden" name="Longitude" id="ReqLongitude" value="@ViewBag.Longitude">
+
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" name="Title" placeholder="e.g. Fix Leaking Pipe in Kitchen" required>
+                </div>
+                <div class="form-group">
+                    <label>What do you need help with?</label>
+                    <textarea name="Description" placeholder="e.g. My kitchen sink is leaking and I need it fixed today." required style="min-height: 100px;"></textarea>
+                </div>
+
+                <div style="grid-template-columns: 1fr 1fr; display: grid; gap: 16px;">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="CategoryId" required>
+                            <option value="1">Plumbing</option>
+                            <option value="2">Cleaning</option>
+                            <option value="3">Electrical</option>
+                            <option value="4">Gardening</option>
+                            <option value="5">Painting</option>
+                            <option value="6">Security</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Location</label>
+                        <input type="text" name="Location" id="ReqLocationAutocomplete" value="@ViewBag.UserLocation" required readonly style="background: var(--bg-arctic); cursor: not-allowed;">
+                    </div>
+                </div>
+
+                <div style="grid-template-columns: 1fr 1fr; display: grid; gap: 16px;">
+                    <div class="form-group">
+                        <label>Budget Range (R)</label>
+                        <select name="PriceRange">
+                            <option>Under R500</option>
+                            <option>R500 - R1,500</option>
+                            <option>R1,500 - R5,000</option>
+                            <option>R5,000 - R15,000</option>
+                            <option>R15,000+</option>
+                            <option>Negotiable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>When do you need it?</label>
+                        <select name="Urgency">
+                            <option>As soon as possible</option>
+                            <option>This week</option>
+                            <option>This month</option>
+                            <option>Flexible</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Image Upload Section -->
+                <div class="form-group" style="margin-top: 8px;">
+                    <label>Reference Images (Max 2)</label>
+                    <div style="display: flex; gap: 12px; margin-top: 8px;">
+                        <div id="imagePreviewContainer" style="display: flex; gap: 12px;"></div>
+                        <label id="uploadTrigger" style="width: 80px; height: 80px; border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: 0.3s; flex-direction: column; gap: 4px;">
+                            <i class="fa-solid fa-camera" style="font-size: 1.2rem;"></i>
+                            <span style="font-size: 0.65rem; font-weight: 700;">ADD</span>
+                            <input type="file" name="Images" id="requestImagesInput" multiple accept="image/*" style="display: none;">
+                        </label>
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 8px;">
+                        Upload photos of the issue to help providers give accurate quotes.
+                    </small>
+                </div>
+
+                <div style="margin-top: 24px; padding: 16px; background: var(--primary-light); border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border);">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; display: flex; gap: 10px; align-items: center;">
+                        <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i>
+                        Your request will be reviewed by moderation before going live.
+                    </p>
+                </div>
+
+                <button type="submit" id="btnBroadcast" class="btn btn-primary" style="width: 100%; border-radius: 12px; height: 52px;">Broadcast Request</button>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function closeNewRequestModal() {
+        $('#newRequestModal').removeClass('active');
+        $('body').removeClass('modal-open');
+    }
+
+    $(function() {
+        // Image Upload Logic
+        const maxFiles = 2;
+        let selectedFiles = [];
+
+        $('#requestImagesInput').on('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            if (selectedFiles.length + files.length > maxFiles) {
+                showNotification("You can only upload a maximum of " + maxFiles + " images.", "warning");
+                return;
+            }
+
+            files.forEach(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification("File " + file.name + " is too large (> 5MB).", "error");
+                    return;
+                }
+                selectedFiles.push(file);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const html = `
+                        <div class="image-preview-item" style="position: relative; width: 80px; height: 80px;">
+                            <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 1px solid var(--border);">
+                            <button type="button" class="remove-img" data-name="${file.name}" style="position: absolute; -5px; right: -5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">&times;</button>
+                        </div>
+                    `;
+                    $('#imagePreviewContainer').append(html);
+                    updateUploadTrigger();
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        $(document).on('click', '.remove-img', function() {
+            const name = $(this).data('name');
+            selectedFiles = selectedFiles.filter(f => f.name !== name);
+            $(this).parent().remove();
+            updateUploadTrigger();
+        });
+
+        function updateUploadTrigger() {
+            if (selectedFiles.length >= maxFiles) {
+                $('#uploadTrigger').hide();
+            } else {
+                $('#uploadTrigger').show();
+            }
+        }
+
+        $('#newRequestForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $('#btnBroadcast');
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Broadcasting...');
+
+            const formData = new FormData(this);
+            // Clear existing Images from formData and re-add our selected files
+            formData.delete('Images');
+            selectedFiles.forEach(file => {
+                formData.append('Images', file);
+            });
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.success) {
+                        showNotification(res.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showNotification(res.message, 'error');
+                        btn.prop('disabled', false).text('Broadcast Request');
+                    }
+                },
+                error: function() {
+                    showNotification('An error occurred. Please try again.', 'error');
+                    btn.prop('disabled', false).text('Broadcast Request');
+                }
+            });
+        });
+    });
+</script>

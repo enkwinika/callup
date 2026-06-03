@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <a href="index.html" class="logo">On<span>call</span></a>
+            <nav class="sidebar-nav">
+                <a href="dashboard-admin.html" class="nav-item"><i class="fa-solid fa-user-shield"></i> <span>Verifications</span></a>
+                <a href="admin-users.html" class="nav-item"><i class="fa-solid fa-users"></i> <span>User Management</span></a>
+                <a href="admin-disputes.html" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Disputes</span></a>
+                <a href="admin-analytics.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> <span>Analytics</span></a>
+            </nav>
+            <a href="login.html" class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+        </aside>
+
+        <main class="main-content">
+            <header class="dash-header">
+                <div class="header-info">
+                    <h1>Performance Analytics</h1>
+                    <p>KPIs and growth metrics for the platform.</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar-sm" style="background: #1E293B;">AD</div>
+                </div>
+            </header>
+
+            <div class="card-section">
+                <div class="chart-placeholder">
+                    <i class="fa-solid fa-chart-line" style="font-size: 2rem; margin-right: 15px;"></i> Monthly Growth KPI Highlights Placeholder
+                </div>
+                <div class="stats-grid" style="margin-top: 40px;">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <span class="stat-value">+24%</span>
+                            <span class="stat-label">User Growth</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <span class="stat-value">R1.2M</span>
+                            <span class="stat-label">Platform Volume</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

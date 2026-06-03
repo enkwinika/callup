@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Provider | Oncall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <a href="index.html" class="logo">On<span>call</span></a>
+            <nav class="sidebar-nav">
+                <a href="dashboard-provider.html" class="nav-item active"><i class="fa-solid fa-briefcase"></i> <span>Opportunities</span></a>
+                <a href="provider-jobs.html" class="nav-item"><i class="fa-solid fa-list-check"></i> <span>My Jobs</span></a>
+                <a href="provider-earnings.html" class="nav-item"><i class="fa-solid fa-wallet"></i> <span>Earnings</span></a>
+                <a href="provider-settings.html" class="nav-item"><i class="fa-solid fa-sliders"></i> <span>Settings</span></a>
+            </nav>
+            <a href="login.html" class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+        </aside>
+
+        <main class="main-content">
+            <header class="dash-header fade-up">
+                <div class="header-info">
+                    <h1>Provider Hub: Sipho's Gardens</h1>
+                    <p>Status: <span style="color:var(--secondary); font-weight:700;">● Online</span> | Service Area: Sandton, JHB</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar-sm" style="background: var(--secondary);">SG</div>
+                </div>
+            </header>
+
+            <div class="view-section active" id="view-opportunities">
+                <div class="stats-grid fade-up" style="animation-delay: 0.1s;">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">5</span>
+                            <span class="stat-label">New Requests</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">R4,250</span>
+                            <span class="stat-label">This Week</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-star"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">4.8</span>
+                            <span class="stat-label">Rating</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-section fade-up" style="animation-delay: 0.2s;">
+                    <div class="table-header">
+                        <h3>Nearby Opportunities</h3>
+                        <div class="pulse-indicator">
+                            <span style="font-size:0.8rem; color:var(--text-muted);">Real-time feed active</span>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Service Need</th>
+                                <th>Distance</th>
+                                <th>Urgency</th>
+                                <th>Estimated Value</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Lawn Mowing & Edging</strong></td>
+                                <td>2.4 km</td>
+                                <td>Immediate</td>
+                                <td>R350 - R500</td>
+                                <td><button class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.8rem;">Submit Bid</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tree Trimming (Large Oak)</strong></td>
+                                <td>5.1 km</td>
+                                <td>Today</td>
+                                <td>R1,200 - R1,800</td>
+                                <td><button class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.8rem;">Submit Bid</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-my-jobs">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Active Jobs</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Hedge Trimming</strong></td>
+                                <td>Alan Miller</td>
+                                <td><span class="status-badge status-active">Started</span></td>
+                                <td><button class="btn btn-secondary btn-sm" style="padding: 4px 12px; font-size: 0.8rem; background:var(--secondary); color:white;">Complete</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-earnings">
+                <div class="card-section">
+                    <div class="table-header">
+                        <h3>Earnings Overview</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        <i class="fa-solid fa-chart-column" style="font-size: 2rem; margin-right: 15px;"></i> Weekly Revenue Chart Placeholder
+                    </div>
+                    <div class="stats-grid" style="margin-top: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-value">R12,500</span>
+                                <span class="stat-label">Total Earned</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-value">R3,200</span>
+                                <span class="stat-label">Pending Payout</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-settings">
+                <div class="card-section">
+                    <h3>Provider Settings</h3>
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label>Availability Toggle</label>
+                        <select>
+                            <option>Online - Ready to Bid</option>
+                            <option>Busy - In a Job</option>
+                            <option>Offline</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Service Radius (km)</label>
+                        <input type="range" min="1" max="50" value="15" style="width: 100%;">
+                        <span style="font-size:0.85rem; color:var(--text-muted);">Current: 15km around Sandton</span>
+                    </div>
+                    <button class="btn btn-primary">Update Profile</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

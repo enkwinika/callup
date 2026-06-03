@@ -1,0 +1,168 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #0F172A; 
+            --secondary: #3B82F6; 
+            --text: #1E293B; 
+            --light: #64748B; 
+            --border: #E2E8F0;
+        }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            color: var(--text); 
+            line-height: 1.6; 
+            margin: 0; 
+            padding: 40px; 
+            background: #f1f5f9; 
+        }
+        .doc-container { max-width: 800px; margin: 0 auto; background: white; padding: 60px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 60px; border-bottom: 2px solid #F1F5F9; padding-bottom: 40px; }
+        .logo-box h1 { 
+            margin: 0; 
+            color: var(--primary); 
+            letter-spacing: -2px; 
+            font-size: 2.8rem; 
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+        }
+        .doc-info { text-align: right; }
+        .doc-type { 
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--primary); 
+            margin: 0; 
+            letter-spacing: -1px;
+        }
+        .doc-num { color: var(--secondary); font-weight: 800; margin-top: 4px; font-size: 1.1rem; }
+        
+        .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 60px; }
+        .address-box h4 { text-transform: uppercase; color: var(--light); font-size: 0.75rem; margin-bottom: 12px; letter-spacing: 1px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th { text-align: left; padding: 16px; background: #F8FAFC; color: var(--light); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #E2E8F0; }
+        td { padding: 20px 16px; border-bottom: 1px solid #F1F5F9; }
+        
+        .totals { margin-left: auto; width: 300px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        .grand-total { border-top: 2px solid var(--primary); margin-top: 16px; padding-top: 16px; font-weight: 800; font-size: 1.25rem; color: var(--primary); }
+        
+        .footer { margin-top: 80px; text-align: center; color: var(--light); font-size: 0.85rem; border-top: 1px solid #F1F5F9; padding-top: 40px; }
+        
+        .no-print { position: fixed; bottom: 40px; right: 40px; display: flex; gap: 12px; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; }
+        .btn-primary { background: var(--secondary); color: white; }
+        
+        @@media print {
+            body { background: white; padding: 0; }
+            .doc-container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid var(--border); align-items: center;">
+        <div style="margin-right: 20px;">
+            <div style="font-weight: 700; font-size: 0.95rem;">Document Preview</div>
+            <div style="font-size: 0.8rem; color: var(--light);">Use 'Print' to save as a professional PDF</div>
+        </div>
+        <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+        <button class="btn" style="background:#f1f5f9; border: 1px solid var(--border);" onclick="window.close()">Close</button>
+    </div>
+
+    <div class="doc-container">
+        <div class="header">
+            <div class="logo-box">
+                <h1>CallUp</h1>
+                <div style="color: var(--light); font-size: 0.95rem; margin-top: 10px; font-weight: 500;">
+                    Premium On-Demand Services<br>
+                    VAT No: 4010293847<br>
+                    www.CallUp.co.za
+                </div>
+            </div>
+            <div class="doc-info">
+                <h2 class="doc-type">@ViewBag.DocType</h2>
+                <div class="doc-num">#@ViewBag.DocNumber</div>
+                <div style="margin-top: 12px; font-size: 0.9rem; color: var(--light);">Date: <strong>@ViewBag.Date</strong></div>
+            </div>
+        </div>
+
+        <div class="address-grid">
+            <div class="address-box">
+                @if (ViewBag.DocType == "Tax Invoice")
+                {
+                    <h4>Bill To</h4>
+                    <div style="font-weight: 700; font-size: 1.1rem;">@ViewBag.CustomerName</div>
+                    <div style="color: var(--light);">@ViewBag.CustomerEmail</div>
+                }
+                else
+                {
+                    <h4>Vendor</h4>
+                    <div style="font-weight: 700; font-size: 1.1rem;">@ViewBag.CompanyName</div>
+                    <div style="color: var(--light);">Attn: @ViewBag.ProviderName</div>
+                    <div style="color: var(--light);">@ViewBag.ProviderEmail</div>
+                }
+            </div>
+            <div class="address-box" style="text-align: right;">
+                <h4>From</h4>
+                <div style="font-weight: 700;">CallUp Services (Pty) Ltd</div>
+                <div style="color: var(--light);">
+                    123 Innovation Drive<br>
+                    Pretoria, Gauteng<br>
+                    support@CallUp.co.za
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style="font-weight: 700; color: var(--primary);">@ViewBag.JobTitle</div>
+                        @if (ViewBag.DocType == "Tax Invoice")
+                        {
+                            <div style="font-size: 0.85rem; color: var(--light); margin-top: 4px;">Service Location: @ViewBag.Location</div>
+                        }
+                    </td>
+                    <td style="text-align: right; font-weight: 700; vertical-align: top;">R @ViewBag.Amount.ToString("N2")</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>R @((ViewBag.Amount / 1.15m).ToString("N2"))</span>
+            </div>
+            <div class="total-row">
+                <span>VAT (15%)</span>
+                <span>R @((ViewBag.Amount - (ViewBag.Amount / 1.15m)).ToString("N2"))</span>
+            </div>
+            <div class="total-row grand-total">
+                <span>Total Amount</span>
+                <span>R @ViewBag.Amount.ToString("N2")</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Thank you for using CallUp!</strong></p>
+            <p>This is a computer-generated document and does not require a signature.</p>
+        </div>
+    </div>
+</body>
+</html>

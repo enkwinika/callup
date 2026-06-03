@@ -1,0 +1,515 @@
+@model IEnumerable<CallUp.Models.ServiceRequest>
+@{
+    ViewBag.Title = "Customer Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* ── Request Service Modal (Premium V2) ──────────────── *@
+<div id="requestModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3 class="font-display" style="font-size: 1.5rem;"><i class="fa-solid fa-paper-plane text-gradient" style="margin-right:12px;"></i>Post Service Request</h3>
+            <button onclick="closeRequestModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="requestForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Service Subject</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Fixing Leaking Pipe in Kitchen" required>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Category</label>
+                    <select name="categoryId" id="modalCatId" class="form-control" required>
+                        <option value="1">Cleaning</option>
+                        <option value="2">Plumbing</option>
+                        <option value="3">Electrical</option>
+                        <option value="4">Gardening</option>
+                        <option value="5">Painting</option>
+                        <option value="6">Moving</option>
+                        <option value="7">Security</option>
+                        <option value="8">Appliances</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Preferred Date</label>
+                    <input type="date" name="serviceDate" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Issue Description</label>
+                <textarea name="description" rows="3" class="form-control" placeholder="Provide as much detail as possible to get accurate bids..." style="resize:none;" required></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Service Location</label>
+                <div style="margin-bottom: 12px;">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" id="useHomeAddress" onchange="toggleLocation(this)" style="width:18px; height:18px; border-radius:4px;"> Use registered address
+                    </label>
+                </div>
+                <input type="text" id="locationInput" name="location" class="form-control" placeholder="Enter full address for the pro..." required>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom: 32px;">
+                <div class="form-group">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Images (Max 4)</label>
+                    <input type="file" id="modalImages" name="images" multiple accept="image/*" onchange="previewImages(this)" class="form-control" style="padding: 8px;">
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Budget Range</label>
+                    <select name="priceRange" class="form-control">
+                        <option value="R0 - R500">R0 - R500</option>
+                        <option value="R500 - R1500">R500 - R1500</option>
+                        <option value="R1500 - R3000">R1500 - R3000</option>
+                        <option value="R3000+">R3000+</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="imagePreview" style="display:flex; gap:12px; margin-bottom:32px;"></div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; height: 56px; font-size: 1.1rem;">
+                <i class="fa-solid fa-cloud-arrow-up" style="margin-right:8px;"></i> Broadcast to Professionals
+            </button>
+        </form>
+    </div>
+</div>
+
+@* ── Bids & Quote Modals Redesigned ─────────────────── *@
+<div id="bidsModal" class="glass-modal-overlay">
+    <div class="glass-modal">
+        <div class="modal-header">
+            <h3 class="font-display" style="font-size: 1.4rem;"><i class="fa-solid fa-hand-holding-dollar text-gradient" style="margin-right:12px;"></i>Professional Bids</h3>
+            <button onclick="closeBidsModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="bidsList" style="display: flex; flex-direction: column; gap: 16px; max-height: 50vh; overflow-y: auto; padding-right: 8px;"></div>
+    </div>
+</div>
+
+<div id="quoteModal" class="glass-modal-overlay">
+    <div class="glass-modal" style="max-width: 550px; text-align: center;">
+        <div style="width: 80px; height: 80px; background: var(--primary-light); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 24px;">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <h3 class="font-display" style="font-size: 1.5rem; margin-bottom: 12px;">Service Quote</h3>
+        <p style="color: var(--text-muted); margin-bottom: 32px;">Your provider has submitted their final offer for this job.</p>
+        
+        <div style="background: var(--bg-arctic); border-radius: 20px; padding: 24px; margin-bottom: 32px; border: 1px dashed var(--border);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Total Quote (Inc. VAT)</div>
+            <div id="quoteAmount" class="font-display" style="font-size: 2.5rem; color: var(--text);">R 0.00</div>
+        </div>
+
+        <button onclick="closeQuoteModal()" class="btn btn-primary" style="width: 100%; border-radius: 50px;">Got it, Thanks!</button>
+    </div>
+</div>
+
+<div class="dashboard-content fade-in">
+
+    @* ── DASHBOARD SECTION: SEARCH / POST ──────────────── *@
+    <div id="section-search" class="dashboard-section">
+        <div class="glass-card" style="padding: 48px; position: relative; overflow: hidden;">
+            @* Background Accent *@
+            <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--primary-glow); border-radius: 50%; blur: 60px; pointer-events: none;"></div>
+            
+            <div style="max-width: 640px; margin: 0 auto; text-align: center; position: relative; z-index: 1;">
+                <h2 class="font-display" style="font-size: 2.4rem; margin-bottom: 16px;">What do you need help with?</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px;">Post a quick request and verified professionals will start bidding within minutes.</p>
+                
+                <div class="glass-card" style="padding: 12px; display: flex; gap: 12px; background: rgba(255,255,255,0.6); backdrop-filter: blur(8px);">
+                    <input type="text" id="quickTitle" placeholder="I need someone to..." 
+                           style="flex: 1; border: none; background: transparent; padding: 0 20px; font-size: 1.1rem; outline: none; font-weight: 500;">
+                    <button class="btn btn-primary" onclick="startRequest()" style="border-radius: 12px; padding: 0 32px;">
+                        Start Posting <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i>
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;">
+                    <span class="pill pill-success"><i class="fa-solid fa-shield-check"></i> Vetted Pros</span>
+                    <span class="pill pill-warning"><i class="fa-solid fa-bolt"></i> Instant Bids</span>
+                    <span class="pill" style="background:#F1F5F9; color:#475569;"><i class="fa-solid fa-lock"></i> Escrow Secure</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-grid" style="margin-top: 32px;">
+            <div class="stat-card-v2">
+                <div class="stat-icon-v2 bg-indigo"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Discover</div>
+                    <div style="font-weight: 800; font-size: 1.1rem;">Top-Rated Providers</div>
+                </div>
+            </div>
+            <div class="stat-card-v2">
+                <div class="stat-icon-v2 bg-emerald"><i class="fa-solid fa-handshake"></i></div>
+                <div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Vetted</div>
+                    <div style="font-weight: 800; font-size: 1.1rem;">Quality Guaranteed</div>
+                </div>
+            </div>
+            <div class="stat-card-v2">
+                <div class="stat-icon-v2 bg-amber"><i class="fa-solid fa-star"></i></div>
+                <div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Escrow</div>
+                    <div style="font-weight: 800; font-size: 1.1rem;">Secure Payment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── DASHBOARD SECTION: ACTIVE REQUESTS ────────────── *@
+    <div id="section-requests" class="dashboard-section" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+            <div>
+                <h2 class="font-display" style="font-size: 1.8rem; margin-bottom: 4px;">My Active Requests</h2>
+                <p style="color: var(--text-muted);">Track your ongoing jobs and respond to new bids.</p>
+            </div>
+            <button class="btn btn-primary" onclick="switchSection('search', null)"><i class="fa-solid fa-plus"></i> New Request</button>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="stat-grid">
+                @foreach (var req in Model)
+                {
+                    <div class="glass-card" style="padding: 28px; border-radius: 24px; position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            @{
+                                var pc = "pill-warning";
+                                if (req.Status == "Open") { pc = "pill-success"; }
+                                else if (req.Status == "InProgress") { pc = "pill-success"; }
+                                else if (req.Status == "Completed") { pc = "pill-success"; }
+                            }
+                            <span class="pill @pc">@req.Status.Replace("InProgress", " In Progress")</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">#REQ-@req.Id</span>
+                        </div>
+                        
+                        <h4 class="font-display" style="font-size: 1.1rem; margin-bottom: 8px;">@req.Title</h4>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 24px; min-height: 3em;">@req.Description</p>
+                        
+                        <div style="display: flex; gap: 12px; align-items: center; padding-top: 20px; border-top: 1px solid var(--border);">
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Category</div>
+                                <div style="font-size: 0.9rem; font-weight: 700;">@req.CategoryName</div>
+                            </div>
+                            @if (req.Status == "Open") {
+                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.8rem;" onclick="viewBids(@req.Id)">Bids</button>
+                            } else if (req.Status == "PendingPayment") {
+                                <button class="btn btn-primary" style="background:#059669; padding: 8px 16px; font-size: 0.8rem;" onclick="payJob(@req.Id)">Pay</button>
+                            } else {
+                                <button class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8rem;">Track</button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="glass-card" style="padding: 80px 40px; text-align: center;">
+                <i class="fa-solid fa-inbox" style="font-size: 3rem; color: var(--border); margin-bottom: 24px;"></i>
+                <h3 class="font-display" style="font-size: 1.5rem; margin-bottom: 12px;">No Active Requests</h3>
+                <p style="color: var(--text-muted); max-width: 380px; margin: 0 auto 32px;">You haven't posted any service needs yet. Professional help is just a few clicks away.</p>
+                <button class="btn btn-outline" onclick="switchSection('search', null)">Post Your First Request</button>
+            </div>
+        }
+    </div>
+
+    @* ── DASHBOARD SECTION: HISTORY ────────────────────── *@
+    <div id="section-history" class="dashboard-section" style="display:none;">
+        <h2 class="font-display" style="font-size: 2rem; margin-bottom: 32px;">Service History</h2>
+        
+        <div class="table-container">
+            @if (ViewBag.History != null && ((IEnumerable<dynamic>)ViewBag.History).Any())
+            {
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Job Details</th>
+                            <th>Provider</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.History)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 700; margin-bottom: 4px;">@item.Title</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">@item.RequestDate.ToString("dd MMM yyyy")</div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="stat-icon-v2 bg-indigo" style="width:32px; height:32px; font-size:0.75rem; border-radius:8px;">@item.Provider.Substring(0, 1)</div>
+                                        <span style="font-weight: 600;">@item.Provider</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 800; color: var(--secondary);">R @item.Amount.ToString("N2")</div>
+                                </td>
+                                <td><span class="pill pill-success">Completed</span></td>
+                                <td>
+                                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;" onclick="showHistoryQuote(@item.Id, @item.Amount)">
+                                        <i class="fa-solid fa-file-invoice"></i> Quote
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="padding: 100px; text-align: center; color: var(--text-muted);">
+                    <i class="fa-solid fa-clock-rotate-left" style="font-size: 3rem; opacity: 0.2; margin-bottom: 24px;"></i>
+                    <p>No completed jobs found in your history.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ── DASHBOARD SECTION: PROFILE ────────────────────── *@
+    <div id="section-profile" class="dashboard-section" style="display:none;">
+        <h2 class="font-display" style="font-size: 2rem; margin-bottom: 32px;">Account Settings</h2>
+        
+        <div class="glass-card" style="max-width: 640px; padding: 48px;">
+            <form id="profileForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                
+                <div style="display: flex; align-items: center; gap: 32px; margin-bottom: 48px; border-bottom: 1px solid var(--border); padding-bottom: 40px;">
+                    <div style="position: relative;">
+                        <img id="profilePreview" 
+                             src="@(string.IsNullOrEmpty(ViewBag.ProfileImagePath) ? "https://ui-avatars.com/api/?name=" + (ViewBag.FullName ?? "User") + "&background=4f46e5&color=fff&size=120" : ViewBag.ProfileImagePath)" 
+                             style="width: 120px; height: 120px; border-radius: 30px; object-fit: cover; box-shadow: var(--shadow-lg);">
+                        <label for="profileImageInput" style="position: absolute; bottom: -8px; right: -8px; background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 4px solid white;">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                        <input type="file" id="profileImageInput" name="profileImage" accept="image/*" style="display: none;" onchange="previewProfileImage(this)">
+                    </div>
+                    <div>
+                        <h4 class="font-display" style="font-size: 1.4rem; margin-bottom: 4px;">@ViewBag.FullName</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">Manage your premium account details</p>
+                        <span class="pill pill-success">Verified Customer</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Full Name</label>
+                    <input type="text" name="fullName" value="@ViewBag.FullName" class="form-control" placeholder="Update your name">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Email (Identity)</label>
+                    <input type="email" value="@ViewBag.Email" class="form-control" style="background: var(--bg-arctic); cursor: not-allowed;" readonly>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 40px;">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Contact Number</label>
+                    <input type="tel" name="phoneNumber" value="@ViewBag.PhoneNumber" class="form-control" placeholder="Phone for booking updates">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 56px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function switchSection(name, el) {
+        document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const target = document.getElementById('section-' + name);
+        if(target) {
+            target.style.display = 'block';
+            target.classList.remove('fade-in');
+            void target.offsetWidth; 
+            target.classList.add('fade-in');
+        }
+        if (el) el.classList.add('active');
+    }
+
+    function startRequest() {
+        const title = $('#quickTitle').val().trim();
+        if (!title) { showNotification("What do you need help with?", "warning"); return; }
+        $('#requestForm input[name="title"]').val(title);
+        $('#requestModal').addClass('active');
+    }
+
+    function closeRequestModal() { $('#requestModal').removeClass('active'); $('#requestForm')[0].reset(); }
+    
+    function toggleLocation(cb) {
+        const input = document.getElementById('locationInput');
+        if (cb.checked) {
+            input.value = "@(ViewBag.UserLocation ?? "Registered Home Address")";
+            input.setAttribute('readonly', true);
+            input.style.background = 'var(--bg-arctic)';
+        } else {
+            input.value = "";
+            input.removeAttribute('readonly');
+            input.style.background = 'white';
+        }
+    }
+
+    function previewImages(input) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        if (input.files) {
+            Array.from(input.files).slice(0, 4).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '80px'; img.style.height = '80px';
+                    img.style.borderRadius = '16px'; img.style.objectFit = 'cover';
+                    img.style.border = '2px solid white'; img.style.boxShadow = 'var(--shadow-md)';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    $('#requestForm').on('submit', function(e) {
+        e.preventDefault();
+        const btn = $(this).find('button[type="submit"]');
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Broadcasting...');
+        
+        var formData = new FormData(this);
+        $.ajax({
+            url: '@Url.Action("CreateRequest", "Customer")',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(res) {
+                if (res.success) { 
+                    showNotification(res.message, 'success'); 
+                    setTimeout(() => location.reload(), 1500); 
+                }
+                else { 
+                    showNotification(res.message, 'error'); 
+                    btn.prop('disabled', false).html('Broadcast to Professionals'); 
+                }
+            }
+        });
+    });
+
+    function viewBids(reqId) {
+        $('#bidsList').html('<div style="text-align:center; padding:40px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x text-gradient"></i></div>');
+        $('#bidsModal').addClass('active');
+
+        $.getJSON('@Url.Action("GetBids", "Customer")', { requestId: reqId }, function(data) {
+            $('#bidsList').empty();
+            if (!data || data.length === 0) {
+                $('#bidsList').html('<div style="text-align:center; padding:40px; color:var(--text-muted);">No bids yet. We notify you as they arrive.</div>');
+                return;
+            }
+            data.forEach(function(b) {
+                $('#bidsList').append(`
+                    <div class="glass-card" style="padding:24px; display:flex; flex-direction:column; gap:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="stat-icon-v2 bg-indigo" style="width:40px; height:40px; border-radius:10px;">${b.provider.substring(0, 1)}</div>
+                                <div>
+                                    <div style="font-weight:700;">${b.provider}</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">${b.date}</div>
+                                </div>
+                            </div>
+                            <div style="font-size:1.3rem; font-weight:800; color:var(--primary);">R ${b.amount}</div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:center; background: var(--bg-arctic); padding: 12px 16px; border-radius: 12px; font-size: 0.85rem;">
+                            <div title="Arrival Date"><i class="fa-solid fa-calendar-check text-primary"></i> <strong>Arrival:</strong> ${b.eta || 'To be confirmed'}</div>
+                        </div>
+                        <p style="font-size:0.9rem; color:var(--text-muted);">${b.notes || 'Interested in this job.'}</p>
+                        <button class="btn btn-primary" style="height:44px; border-radius:10px;" onclick="selectSupplier(${reqId}, ${b.id})">Hire this Professional</button>
+                    </div>`);
+            });
+        });
+    }
+
+    function closeBidsModal() { $('#bidsModal').removeClass('active'); }
+    function closeQuoteModal() { $('#quoteModal').removeClass('active'); }
+
+    async function selectSupplier(reqId, bidId) {
+        if (!await premiumConfirm("Confirm hire? This professional will be notified and a final quote will be generated.")) return;
+        $.post('@Url.Action("SelectProvider", "Customer")', { requestId: reqId, bidId: bidId }, function(res) {
+            if (res.success) { 
+                showNotification(res.message, 'success'); 
+                setTimeout(() => location.reload(), 1500); 
+            }
+            else { 
+                showNotification(res.message, 'error'); 
+            }
+        });
+    }
+
+    function showHistoryQuote(id, amt) {
+        $('#quoteAmount').text('R ' + parseFloat(amt).toLocaleString(undefined, {minimumFractionDigits: 2}));
+        $('#quoteModal').addClass('active');
+    }
+
+    function previewProfileImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { $('#profilePreview').attr('src', e.target.result); }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $('#profileForm').on('submit', function(e) {
+        e.preventDefault();
+        const btn = $(this).find('button[type="submit"]');
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Syncing...');
+
+        const formData = new FormData(this);
+        $.ajax({
+            url: '@Url.Action("UpdateProfile", "Customer")',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(res) { 
+                if (res.success) { 
+                    showNotification(res.message, 'success'); 
+                    setTimeout(() => location.reload(), 1500); 
+                }
+                else { 
+                    showNotification(res.message, 'error'); 
+                    btn.prop('disabled', false).text('Save Changes'); 
+                }
+            }
+        });
+    });
+
+    async function payJob(id) {
+        if (!await premiumConfirm("Securely pay into Escrow? Funds are only released when you confirm satisfaction.")) return;
+        $.post('@Url.Action("ProcessPayment", "Customer")', { requestId: id }, function(res) {
+            if (res.success) {
+                showNotification(res.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(res.message, 'error');
+            }
+        });
+    }
+
+    async function confirmWork(id) {
+        if (!await premiumConfirm("Mark as complete? This releases final funds to the professional.")) return;
+        $.post('@Url.Action("ConfirmWork", "Customer")', { requestId: id }, function(res) {
+            if (res.success) {
+                showNotification(res.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(res.message, 'error');
+            }
+        });
+    }
+</script>
+}

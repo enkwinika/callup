@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewBag.Title ?? "CallUp") | Premium Home Services</title>
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Connect with verified home service professionals in South Africa. Premier on-demand marketplace for plumbing, electrical, and maintenance.">
+    <meta name="keywords" content="home services, South Africa, plumber, electrician, on-demand maintenance, CallUp">
+    <meta name="author" content="CallUp Team">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="rating" content="General">
+    <meta name="revisit-after" content="7 days">
+    <link rel="canonical" href="@Request.Url.AbsoluteUri" />
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="CallUp | Premium Home Services">
+    <meta property="og:description" content="South Africa's leading on-demand marketplace for verified service professionals.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="@Url.Content("~/Content/img/brand/logo-main.png")">
+
+    <!-- Brand Assets -->
+    <link rel="icon" type="image/png" href="@Url.Content("~/Content/img/icon.png")?v=@DateTime.Now.Ticks">
+    <link rel="apple-touch-icon" href="@Url.Content("~/Content/img/icon.png")?v=@DateTime.Now.Ticks">
+
+    
+    <!-- Google Fonts: Outfit for headings, Inter for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Design V2 (cache-busted) -->
+    <link rel="stylesheet" href="@Url.Content("~/Content/Site-Design.css")?v=@DateTime.Now.Ticks">
+
+    <style>
+        /* ── Critical Layout Framework (Floating Glass Layout) ── */
+        .app-container { 
+            display: flex; 
+            min-height: 100vh;
+            background: #ffffff;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #ffffff !important;
+            border-right: 1px solid var(--border);
+            padding: 15px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .main-wrap {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .topbar {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        /* Nav Item Premium Overrides */
+        .sidebar-nav { display: flex; flex-direction: column; gap: 6px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: var(--radius-md);
+            color: var(--text-muted); font-weight: 500; transition: 0.2s;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: var(--primary-light); color: var(--primary); transform: translateX(4px); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: var(--shadow-md); }
+        .nav-item i { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        .dashboard-content { padding: 40px; flex: 1; }
+        
+        .layout-landing .main-wrap { margin-left: 0; }
+        
+        @@media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrap { margin-left: 0; }
+            .topbar { padding: 0 20px; }
+            .dashboard-content { padding: 20px; }
+        }
+    </style>
+
+    <!-- Core Scripts (Head-loaded for component compatibility) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signalr.js/2.4.3/jquery.signalR.min.js"></script>
+    <script src="@Url.Content("~/signalr/hubs")"></script>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=@(System.Configuration.ConfigurationManager.AppSettings["GoogleMapsApiKey"])&libraries=places"></script>
+
+    <!-- ⚡ LogX Diagnostic Manager (HEAD) -->
+    <script>
+        (function() {
+            var logs = JSON.parse(sessionStorage.getItem('logx_buffer') || "[]");
+            
+            // Helper to push and sync
+            window.logx = function(msg, isServer = false) {
+                var entry = { t: new Date().toLocaleTimeString(), m: (isServer ? "[Server] " : "[Client] ") + msg };
+                logs.push(entry);
+                if (logs.length > 20) logs.shift(); // Keep last 20
+                sessionStorage.setItem('logx_buffer', JSON.stringify(logs));
+                
+                var color = isServer ? "#38bdf8" : "#fbbf24";
+                var isError = msg.toLowerCase().indexOf('error') > -1 || msg.toLowerCase().indexOf('failed') > -1;
+                console.log("%c logx %c[" + entry.t + "] %c" + entry.m, 
+                            "background:#1e293b; color:" + color + "; padding:2px 4px; border-radius:3px; font-weight:bold;",
+                            "color:#94a3b8;", 
+                            isError ? "color:#fb7185; font-weight:bold;" : "color:#f8fafc;");
+            };
+
+            // 1. Log immediate page load info
+            logx("Page Load: " + window.location.pathname + window.location.search);
+            logx("Auth Status (Server-side): @(Request.IsAuthenticated ? "Logged In" : "Guest")");
+
+            // 2. Capture server-side breadcrumbs passed via TempData
+            var serverMsg = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(TempData["logx"] ?? ""));
+            if (serverMsg) {
+                logx(serverMsg, true);
+            }
+
+            // 3. Clear logs on request (for fresh troubleshooting)
+             window.clearLogx = function() { sessionStorage.removeItem('logx_buffer'); console.clear(); console.log("logx: Buffer cleared."); };
+        })();
+    </script>
+
+    @RenderSection("styles", required: false)
+</head>
+<body class="@(ViewBag.IsDashboard == true ? "layout-dashboard" : "layout-landing")">
+
+    @if (Request.IsAuthenticated && ViewBag.IsDashboard == true)
+    {
+        <div class="app-container">
+            @{
+                string userEmail = User.Identity.Name;
+                string role = "Customer";
+                if (ViewBag.UserRole != null) { role = ViewBag.UserRole; }
+                string fullName = Session["FullName"]?.ToString() ?? userEmail.Split('@')[0];
+            }
+
+            @if (role == "Admin") { @Html.Partial("_SidebarAdmin") }
+            else if (role == "Provider") { @Html.Partial("_SidebarProvider") }
+            else { @Html.Partial("_SidebarCustomer") }
+
+            <!-- Mobile Sidebar Overlay -->
+            <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+            <main class="main-wrap">
+                <!-- Top Bar -->
+                <div class="topbar">
+                    <!-- Mobile Hamburger -->
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <!-- Search (left) -->
+                    <div class="topbar-search" style="flex: 1; max-width: 400px; position: relative;">
+                        <i class="fa-solid fa-magnifying-glass topbar-search-icon" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); opacity: 0.6;"></i>
+                        <input type="text" class="topbar-search-input" placeholder="Search services..." id="topbarSearch" 
+                               style="width: 100%; height: 46px; padding: 0 16px 0 48px; border-radius: 14px; border: 1px solid var(--border); background: rgba(248, 250, 252, 0.8); transition: 0.3s; font-size: 0.95rem;">
+                    </div>
+
+                    <!-- Right: Greeting + Role + Bell -->
+                    <div class="topbar-right">
+                        <!-- Greeting -->
+                        <div class="topbar-greeting" onclick="switchSection('profile', this)" style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 12px; transition: 0.2s; border: 1px solid transparent;" onmouseover="this.style.background='var(--primary-light)'; this.style.borderColor='var(--primary-light)'" onmouseout="this.style.background='transparent'; this.style.borderColor='transparent'">
+                            <span class="topbar-hello">Good day,</span>
+                            <span class="topbar-name">@fullName</span>
+                        </div>
+                        <span class="topbar-role-badge @role.ToLower()">@role</span>
+
+                        <!-- Notifications -->
+                        <div class="topbar-icon-btn" id="notifBell" title="Notifications" style="position: relative;">
+                            <i class="fa-solid fa-bell"></i>
+                            <span class="notif-badge" id="notifBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #EF4444; color: white; border-radius: 10px; font-size: 0.65rem; padding: 2px 6px; font-weight: 800; border: 2px solid white;">0</span>
+                            <span class="notif-dot" id="notifDot" style="display: none;"></span>
+                            <div class="notif-dropdown" id="notifDropdown">
+                                <div class="notif-header">
+                                    <span>Notifications</span>
+                                    <span id="notifCount" class="text-primary"></span>
+                                </div>
+                                <div class="notif-list" id="notifList">
+                                    <div class="notif-empty" id="notifEmpty">No notifications yet.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    @if (TempData["Message"] != null)
+                    {
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                showNotification("@Html.Raw(TempData["Message"])", "@(TempData["MessageType"] ?? "info")");
+                            });
+                        </script>
+                    }
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    }
+    else
+    {
+
+        <div class="main-wrap">
+            @if (TempData["Message"] != null)
+            {
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        showNotification("@Html.Raw(TempData["Message"])", "@(TempData["MessageType"] ?? "info")");
+                    });
+                </script>
+            }
+            @RenderBody()
+        </div>
+
+
+        <footer style="padding: 80px 0 40px; background: white; border-top: 1px solid var(--border); margin-top: 100px;">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; text-align: center;">
+                <a href="#" class="logo" style="margin-bottom: 24px; display: inline-block;">
+                    <img src="@Url.Content("~/Content/img/brand/logo-main.png")?v=@DateTime.Now.Ticks" alt="CallUp" style="height: 90px;">
+                </a>
+                <p style="margin-bottom: 32px;">The premium on-demand service marketplace for South Africa.</p>
+                <div style="border-top: 1px solid var(--border); padding-top: 32px; color: var(--text-muted); font-size: 0.9rem;">
+                    &copy; 2026 CallUp Home Services. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    }
+
+    <script>
+        // Global Navigation & UI Logic
+        window.closeSidebar = function() {
+            var sidebar = document.querySelector('.sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            var toggle  = document.getElementById('sidebarToggle');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+            if (toggle) toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        };
+
+        window.openSidebar = function() {
+            var sidebar = document.querySelector('.sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            var toggle  = document.getElementById('sidebarToggle');
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('active');
+            if (toggle) toggle.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        };
+
+        window.switchSection = function(id, element) {
+            var $target = $('#view-' + id);
+            if ($target.length === 0) {
+                console.warn('View section not found: ' + id);
+                return;
+            }
+
+            $('.view-section').removeClass('active');
+            $target.addClass('active');
+
+            $('.nav-item').removeClass('active');
+            $(element).addClass('active');
+
+            if (!$(element).closest('.sidebar').length) {
+                $('.sidebar .nav-item[onclick*="'+id+'"]').addClass('active');
+            }
+
+            var menuText = $(element).find('span').text().trim() || $(element).text().trim();
+            if ($('#pageTitle').length && menuText) {
+                $('#pageTitle').text(menuText);
+            }
+            if ($('#pageSubtitle').length) {
+                $('#pageSubtitle').toggle(id === 'requests');
+            }
+            if ($('#newRequestBtn').length) {
+                $('#newRequestBtn').toggle(id === 'requests' || id === 'find-service');
+            }
+
+            if (window.innerWidth <= 1024) closeSidebar();
+        };
+
+        $(function () {
+            $('#sidebarToggle').on('click', function () {
+                var isOpen = $('.sidebar').hasClass('open');
+                isOpen ? closeSidebar() : openSidebar();
+            });
+            $('#sidebarOverlay').on('click', closeSidebar);
+        });
+
+        // Notifications logic
+        $(function() {
+            var $bell = $('#notifBell');
+            var $dropdown = $('#notifDropdown');
+            var $list = $('#notifList');
+            var $dot = $('#notifDot');
+
+            function fetchNotifications() {
+                $.get('@Url.Action("GetNotifications", "Dashboard")', function(data) {
+                    if (data.success) {
+                        renderNotifications(data.notifications);
+                    }
+                });
+            }
+
+            function renderNotifications(notifs) {
+                if (notifs.length === 0) {
+                    $list.html('<div class="notif-empty">No notifications yet.</div>');
+                    $('#notifBadge').hide();
+                    $('#notifCount').text('');
+                    $dot.hide();
+                    return;
+                }
+
+                var html = '';
+                var unreadCount = 0;
+                notifs.forEach(function(n) {
+                    if (!n.isRead) unreadCount++;
+                    
+                    let icon = 'fa-bell';
+                    let iconColor = 'var(--primary)';
+                    let action = '';
+
+                    if (n.type === 'message') {
+                        icon = 'fa-comment-dots';
+                        iconColor = 'var(--secondary)';
+                        action = 'onclick="switchSection(\'messages\')"';
+                    }
+
+                    html += '<div class="notif-item ' + (n.isRead ? '' : 'unread') + '" data-id="' + n.id + '" data-type="' + n.type + '" ' + action + ' style="display:flex; gap:12px; padding:12px; border-bottom:1px solid var(--border); cursor:pointer;">' +
+                            '  <div class="notif-icon-small" style="color:' + iconColor + '; width:20px; text-align:center;"><i class="fa-solid ' + icon + '"></i></div>' +
+                            '  <div style="flex:1;">' +
+                            '    <div class="notif-msg" style="font-size:0.85rem; line-height:1.4;">' + n.message + '</div>' +
+                            '    <div class="notif-time" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">' + n.date + '</div>' +
+                            '  </div>' +
+                            '</div>';
+                });
+
+                $list.html(html);
+                if (unreadCount > 0) {
+                    $('#notifBadge').text(unreadCount).show();
+                    $('#notifCount').text(unreadCount + ' new');
+                    $dot.show();
+                } else {
+                    $('#notifBadge').hide();
+                    $('#notifCount').text('');
+                    $dot.hide();
+                }
+            }
+
+            $bell.on('click', function(e) {
+                e.stopPropagation();
+                $dropdown.toggleClass('show');
+            });
+
+            $list.on('click', '.notif-item.unread', function() {
+                var $item = $(this);
+                if ($item.data('type') === 'message') return;
+
+                var id = $item.data('id');
+                $.post('@Url.Action("MarkNotificationRead", "Dashboard")', { 
+                    id: id,
+                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() 
+                }, function(res) {
+                    if (res.success) {
+                        $item.removeClass('unread');
+                        fetchNotifications();
+                    }
+                });
+            });
+
+            $(document).on('click', function() { $dropdown.removeClass('show'); });
+
+            fetchNotifications();
+            setInterval(fetchNotifications, 30000);
+
+            // Google Maps Error Recovery
+            setInterval(function() {
+                $('.gm-err-autocomplete').each(function() {
+                    if ($(this).prop('disabled')) {
+                        $(this).prop('disabled', false)
+                               .removeClass('gm-err-autocomplete')
+                               .attr('placeholder', 'Enter location manually...')
+                               .css('background-image', 'none');
+                    }
+                });
+            }, 2000);
+        });
+
+        window.showNotification = function(message, type = 'info') {
+            const container = document.getElementById('notificationStack');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'fade-up alert-banner alert-' + type;
+            toast.style.cssText = 'pointer-events: auto; margin-bottom: 0; box-shadow: var(--shadow-xl); cursor: pointer; transform: translateY(-20px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);';
+            
+            const icon = type === 'success' ? 'fa-circle-check' : 
+                         type === 'error' ? 'fa-circle-exclamation' : 
+                         type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info';
+            
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <div style="flex:1;">${message}</div> <i class="fa-solid fa-xmark" style="opacity:0.4; font-size:0.8rem;"></i>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.transform = 'translateY(0)'; toast.style.opacity = '1'; }, 10);
+
+            const dismiss = () => {
+                toast.style.transform = 'translateY(-20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 400);
+            };
+
+            const timeout = setTimeout(dismiss, 5000);
+            toast.onclick = () => { clearTimeout(timeout); dismiss(); };
+        };
+
+        // --- Premium Dialog System (Modern Replacement for alert/confirm/prompt) ---
+        window.premiumConfirm = function(message, title = 'Confirm Action', icon = 'fa-circle-question') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('premiumConfirmOverlay');
+                const modal = overlay.querySelector('.premium-dialog-modal');
+                
+                overlay.querySelector('.dialog-title').innerText = title;
+                overlay.querySelector('.dialog-message').innerText = message;
+                overlay.querySelector('.dialog-icon i').className = `fa-solid ${icon}`;
+                overlay.querySelector('.dialog-input-container').style.display = 'none';
+                
+                const btnConfirm = overlay.querySelector('.btn-dialog-confirm');
+                const btnCancel = overlay.querySelector('.btn-dialog-cancel');
+                
+                btnConfirm.innerText = 'Confirm';
+                btnCancel.style.display = 'inline-flex';
+                
+                const handleConfirm = () => { cleanup(); resolve(true); };
+                const handleCancel = () => { cleanup(); resolve(false); };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnConfirm.removeEventListener('click', handleConfirm);
+                    btnCancel.removeEventListener('click', handleCancel);
+                };
+
+                btnConfirm.addEventListener('click', handleConfirm);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+            });
+        };
+
+        window.premiumAlert = function(message, title = 'Notice', icon = 'fa-circle-info') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('premiumConfirmOverlay');
+                overlay.querySelector('.dialog-title').innerText = title;
+                overlay.querySelector('.dialog-message').innerText = message;
+                overlay.querySelector('.dialog-icon i').className = `fa-solid ${icon}`;
+                overlay.querySelector('.dialog-input-container').style.display = 'none';
+                
+                const btnConfirm = overlay.querySelector('.btn-dialog-confirm');
+                const btnCancel = overlay.querySelector('.btn-dialog-cancel');
+                
+                btnConfirm.innerText = 'OK';
+                btnCancel.style.display = 'none';
+                
+                const handleConfirm = () => {
+                    overlay.classList.remove('active');
+                    btnConfirm.removeEventListener('click', handleConfirm);
+                    resolve();
+                };
+
+                btnConfirm.addEventListener('click', handleConfirm);
+                overlay.classList.add('active');
+            });
+        };
+
+        window.premiumPrompt = function(message, defaultValue = '', title = 'Input Required', icon = 'fa-pen-to-square') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('premiumConfirmOverlay');
+                const input = overlay.querySelector('.dialog-input');
+                
+                overlay.querySelector('.dialog-title').innerText = title;
+                overlay.querySelector('.dialog-message').innerText = message;
+                overlay.querySelector('.dialog-icon i').className = `fa-solid ${icon}`;
+                overlay.querySelector('.dialog-input-container').style.display = 'block';
+                input.value = defaultValue;
+                
+                const btnConfirm = overlay.querySelector('.btn-dialog-confirm');
+                const btnCancel = overlay.querySelector('.btn-dialog-cancel');
+                
+                btnConfirm.innerText = 'Submit';
+                btnCancel.style.display = 'inline-flex';
+                
+                const handleConfirm = () => { cleanup(); resolve(input.value); };
+                const handleCancel = () => { cleanup(); resolve(null); };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnConfirm.removeEventListener('click', handleConfirm);
+                    btnCancel.removeEventListener('click', handleCancel);
+                };
+
+                btnConfirm.addEventListener('click', handleConfirm);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+                setTimeout(() => input.focus(), 300);
+            });
+        };
+    </script>
+
+    <div id="loadingOverlay" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.7); z-index:99999; align-items:center; justify-content:center;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x text-gradient"></i>
+    </div>
+
+    <!-- Premium Dialog Component -->
+    <div id="premiumConfirmOverlay" class="glass-modal-overlay">
+        <div class="glass-modal premium-dialog-modal" style="max-width: 480px; text-align: center; padding: 48px;">
+            <div class="dialog-icon" style="width: 80px; height: 80px; background: var(--primary-light); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 24px;">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 class="dialog-title font-display" style="font-size: 1.5rem; margin-bottom: 12px;">Confirm Action</h3>
+            <p class="dialog-message" style="color: var(--text-muted); margin-bottom: 24px; font-size: 1.05rem; line-height: 1.6;"></p>
+            
+            <div class="dialog-input-container" style="display: none; margin-bottom: 32px;">
+                <input type="text" class="dialog-input form-control" style="text-align: center; font-size: 1.1rem; border-color: var(--primary);">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <button class="btn btn-outline btn-dialog-cancel" style="height: 54px; border-radius: 16px;">Cancel</button>
+                <button class="btn btn-primary btn-dialog-confirm" style="height: 54px; border-radius: 16px;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .premium-dialog-modal {
+            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.9) !important;
+            backdrop-filter: blur(20px) !important;
+        }
+        #premiumConfirmOverlay.active { opacity: 1; visibility: visible; }
+        #premiumConfirmOverlay.active .premium-dialog-modal { transform: scale(1); opacity: 1; }
+        .premium-dialog-modal { transform: scale(0.9); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    </style>
+
+    <!-- Notification Stack -->
+    <div id="notificationStack" style="position: fixed; top: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; width: 350px; max-width: 90vw;"></div>
+
+    @Html.Partial("_DashboardModals")
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

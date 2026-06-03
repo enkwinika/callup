@@ -1,0 +1,992 @@
+@model IEnumerable<CallUp.Models.ServiceRequest>
+@{
+    ViewBag.Title = "My Dashboard";
+    string role = ViewBag.UserRole ?? "Customer";
+}
+
+<div class="dash-header fade-up">
+    <div>
+        <h1 id="pageTitle" style="font-size: 2.5rem; margin-bottom: 6px;">My Requests</h1>
+        <p id="pageSubtitle">You have <strong>@Model.Count(r => r.Status != "Completed")</strong> active requests.</p>
+    </div>
+    <button class="btn btn-primary" onclick="$('#newRequestModal').addClass('active'); $('body').addClass('modal-open');" id="newRequestBtn">
+        <i class="fa-solid fa-plus"></i> New Request
+    </button>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid fade-up" style="animation-delay: 0.1s;">
+    <div class="stat-card-v2">
+        <div class="stat-icon-v2 bg-indigo"><i class="fa-solid fa-paper-plane"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">@Model.Count(r => r.Status != "Completed" && r.Status != "Closed" && r.Status != "Rejected")</span>
+            <span class="stat-label">Active Requests</span>
+        </div>
+    </div>
+    <div class="stat-card-v2">
+        <div class="stat-icon-v2 bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">@Model.Count(r => r.Status == "Completed")</span>
+            <span class="stat-label">Total Jobs Done</span>
+        </div>
+    </div>
+    <div class="stat-card-v2">
+        <div class="stat-icon-v2 bg-amber"><i class="fa-solid fa-star"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">4.9</span>
+            <span class="stat-label">Your Rating</span>
+        </div>
+    </div>
+</div>
+
+<!-- View Sections -->
+<div class="view-section active" id="view-requests">
+    <div class="card-section fade-up" style="animation-delay: 0.2s;">
+        <div class="table-header">
+            <h3>Active Requests</h3>
+        </div>
+        
+        @if (!Model.Any())
+        {
+            <div style="text-align: center; padding: 100px 40px;">
+                <div style="font-size: 4rem; color: var(--border); margin-bottom: 24px;"><i class="fa-solid fa-folder-open"></i></div>
+                <h3 style="margin-bottom: 12px;">No active requests</h3>
+                <p style="margin-bottom: 32px;">Need something fixed? Post a request and get bids in minutes.</p>
+                <button class="btn btn-outline" onclick="$('#newRequestModal').addClass('active'); $('body').addClass('modal-open');">Get Bids Now</button>
+            </div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Service Needed</th>
+                        <th>Status</th>
+                        <th>Views</th>
+                        <th>Bids</th>
+                        <th>Request Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Where(r => r.Status != "Completed" && r.Status != "Closed" && r.Status != "Cancelled" && r.Status != "Rejected" && r.Status != "PendingConfirmation"))
+                    {
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700;">@(string.IsNullOrEmpty(item.Title) ? item.Description : item.Title)</div>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-location-dot"></i> @item.Location</div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-@(item.Status.ToLower().Replace(" ", "-"))">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td style="text-align: center; font-weight: 600;">@item.ViewCount</td>
+                            <td style="text-align: center; font-weight: 600;">@item.BidCount</td>
+                            <td style="color: var(--text-muted);">@item.CreatedAt.ToString("dd MMM, HH:mm")</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-outline btn-sm" onclick="viewRequestDetails(@item.Id, '@(item.Title ?? item.Description)', '@item.Status')">Manage</button>
+                                    
+                                    @if (item.Status == "InProgress" || item.Status == "Completed" || item.Status == "PendingConfirmation" || item.Status == "Closed")
+                                    {
+                                        <a href="@Url.Action("Invoice", "Document", new { id = item.Id })" target="_blank" class="btn btn-outline btn-sm" style="color: var(--secondary); border-color: var(--secondary); gap: 6px;">
+                                            <i class="fa-solid fa-download"></i> Invoice
+                                        </a>
+                                    }
+                                    @if (item.Status == "Open" || item.Status == "Moderation")
+                                    {
+                                        <button class="btn btn-sm" style="color: var(--error); border-color: transparent;" onclick="cancelRequest(@item.Id)">Cancel</button>
+                                    }
+                                    @if (item.Status == "PendingPayment")
+                                    {
+                                        <button class="btn btn-primary btn-sm" onclick="processPayment(@item.Id)">Pay Now</button>
+                                    }
+                                    @if (item.Status == "Completed") 
+                                    {
+                                        <button class="btn btn-primary btn-sm" onclick="openRatingModal(@item.Id, '@item.Title')">Rate</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@* ── FIND A SERVICE ── *@
+<div class="view-section" id="view-find-service">
+
+    <!-- Hero Search -->
+    <div class="find-service-hero fade-up">
+        <h2 class="find-service-title">Find the Right Professional</h2>
+        <p class="find-service-sub">Search by trade or skill — book directly or post for bids</p>
+        <div class="find-service-search-bar">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+            <input type="text" id="providerSearchInput" placeholder="e.g. Plumber, Electrician, Cleaner..." autocomplete="off">
+            <button class="btn btn-primary" onclick="searchProviders()" id="searchProvidersBtn">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+            </button>
+            <button class="btn btn-outline" id="toggleMapViewBtn" onclick="toggleMapView()" style="margin-left: 10px; width: 50px; padding: 0;" title="Map View">
+                <i class="fa-solid fa-map-location-dot"></i>
+            </button>
+        </div>
+
+        <div id="serviceMapPanel" class="glass-card fade-up" style="display: none; height: 400px; margin-top: 30px; overflow: hidden; padding: 0; border-radius: 20px;">
+            <div id="googleMap" style="height: 100%; width: 100%;"></div>
+        </div>
+        <!-- Quick category pills -->
+        <div class="find-service-cats">
+            <button class="cat-pill" onclick="quickSearch('Plumber')"><i class="fa-solid fa-wrench"></i> Plumber</button>
+            <button class="cat-pill" onclick="quickSearch('Electrician')"><i class="fa-solid fa-bolt"></i> Electrician</button>
+            <button class="cat-pill" onclick="quickSearch('Cleaner')"><i class="fa-solid fa-broom"></i> Cleaner</button>
+            <button class="cat-pill" onclick="quickSearch('Painter')"><i class="fa-solid fa-paint-roller"></i> Painter</button>
+            <button class="cat-pill" onclick="quickSearch('Gardener')"><i class="fa-solid fa-leaf"></i> Gardener</button>
+            <button class="cat-pill" onclick="quickSearch('Handyman')"><i class="fa-solid fa-screwdriver-wrench"></i> Handyman</button>
+        </div>
+    </div>
+
+    <!-- Two Column Layout: Results + Post a Request -->
+    <div class="find-service-grid">
+
+        <!-- Provider Results -->
+        <div id="providersPanel">
+            <div class="card-section">
+                <div class="table-header">
+                    <div>
+                        <h3 id="providerResultsTitle">Available Providers</h3>
+                        <p>Tap a provider to request their service directly</p>
+                    </div>
+                    <span id="providerCount" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+                </div>
+                <div id="providerResults" style="padding: 24px;">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <p>Search above to find professionals in your area</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post a Request (Bid Form) -->
+        <!-- Request assistance banner -->
+        <div>
+            <div class="card-section" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; overflow: hidden; position: relative;">
+                <div style="padding: 40px; position: relative; z-index: 2;">
+                    <h3 style="color: white; font-size: 1.8rem; margin-bottom: 8px;">Need something else?</h3>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">Post a new request and let our verified professionals come to you with competitive bids.</p>
+                    <button class="btn btn-light" onclick="$('#newRequestModal').addClass('active'); $('body').addClass('modal-open');" style="background: white; color: var(--primary); font-weight: 700; border: none; height: 50px; padding: 0 32px; border-radius: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                        <i class="fa-solid fa-plus"></i> Create New Request
+                    </button>
+                </div>
+                <i class="fa-solid fa-tools" style="position: absolute; right: -20px; bottom: -20px; font-size: 12rem; color: rgba(255,255,255,0.1); transform: rotate(-15deg);"></i>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@* ── CUSTOMER SETTINGS ── *@
+<div class="view-section" id="view-settings">
+
+    <div class="profile-hero fade-up">
+        <div class="profile-avatar-lg" style="background: var(--primary);"><i class="fa-solid fa-gear" style="font-size:1.5rem;"></i></div>
+        <div class="profile-hero-info">
+            <h2 class="profile-hero-name">Settings</h2>
+            <p class="profile-hero-email">Manage your preferences and notification settings</p>
+        </div>
+    </div>
+
+    <div class="profile-grid fade-up" style="animation-delay:0.1s;">
+
+        <!-- Notification Preferences -->
+        <div class="card-section">
+            <div class="table-header">
+                <div><h3>Notification Preferences</h3><p>Choose how and when we contact you</p></div>
+                <i class="fa-solid fa-bell" style="color:var(--primary);font-size:1.2rem;opacity:0.4;"></i>
+            </div>
+            <div style="padding: 28px;">
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">New Bid Received</div>
+                        <div class="settings-toggle-desc">When a provider submits a bid on your request</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">Job Started</div>
+                        <div class="settings-toggle-desc">When a provider begins work on your job</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">Job Completed</div>
+                        <div class="settings-toggle-desc">When a provider marks work as done</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">Promotions & Tips</div>
+                        <div class="settings-toggle-desc">Helpful service tips and special offers</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication -->
+        <div class="card-section">
+            <div class="table-header">
+                <div><h3>Communication</h3><p>How we reach you</p></div>
+                <i class="fa-solid fa-envelope" style="color:var(--secondary);font-size:1.2rem;opacity:0.4;"></i>
+            </div>
+            <div style="padding: 28px;">
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">Email Notifications</div>
+                        <div class="settings-toggle-desc">Receive updates at @User.Identity.Name</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">SMS Alerts</div>
+                        <div class="settings-toggle-desc">Critical updates via text message</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-toggle-row">
+                    <div>
+                        <div class="settings-toggle-label">In-App Notifications</div>
+                        <div class="settings-toggle-desc">Shown in your dashboard bell icon</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <button class="btn btn-primary" onclick="showNotification('Settings saved!', 'success')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="view-section" id="view-messages">
+    <div class="card-section">
+        <div class="table-header"><h3>Messages</h3></div>
+        <div style="padding: 24px;">
+            @if (ViewBag.Messages != null && ((IEnumerable<dynamic>)ViewBag.Messages).Any())
+            {
+                foreach (var msg in (IEnumerable<dynamic>)ViewBag.Messages)
+                {
+                    bool isUnread = !msg.IsRead;
+                    <div class="glass-card @(isUnread ? "unread-message" : "")" style="margin-bottom: 16px; padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px; border: 1px solid @(isUnread ? "var(--primary)" : "var(--primary-light)"); background: @(isUnread ? "rgba(var(--primary-rgb), 0.05)" : "rgba(var(--primary-rgb), 0.02)"); position: relative;">
+                        @if (isUnread)
+                        {
+                            <div style="position: absolute; top: 12px; right: 20px; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;" title="New message"></div>
+                        }
+                        <div class="user-avatar" style="width: 50px; height: 50px; background: var(--primary);">@msg.SenderName.Substring(0, 1)</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+                                <h4 style="margin: 0; font-weight: 700;">@msg.SenderName <span class="status-badge provider" style="font-size: 0.65rem; padding: 2px 6px; margin-left: 8px;">@msg.Role</span></h4>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">@msg.Time</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-dark);">"@msg.Message"</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="padding: 40px; text-align: center; color: var(--text-muted); opacity: 0.5;">
+                    <i class="fa-solid fa-message" style="font-size: 2rem; margin-bottom: 12px;"></i>
+                    <p style="font-size: 0.85rem;">You have no messages yet. Start a conversation with a provider.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="view-section" id="view-history">
+    <div class="card-section">
+        <div class="table-header"><h3>Service History</h3></div>
+        <div style="padding: 24px;">
+            @if (ViewBag.History != null && ((IEnumerable<dynamic>)ViewBag.History).Any())
+            {
+                foreach (var h in (IEnumerable<dynamic>)ViewBag.History)
+                {
+                    <div class="glass-card fade-up" style="margin-bottom: 20px; padding: 24px; border-radius: 20px; border: 1px solid var(--border); background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 20px; align-items: center;">
+                                <div class="stat-icon-v2" style="background: var(--bg-arctic); color: var(--secondary); width: 50px; height: 50px; border-radius: 14px; font-size: 1.2rem;">
+                                    <i class="fa-solid fa-check-double"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;">@h.Title</h3>
+                                    <div style="display: flex; gap: 12px; margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                                        <span><i class="fa-solid fa-user-tie" style="margin-right:4px;"></i> <strong>@h.ProviderName</strong></span>
+                                        <span><i class="fa-solid fa-calendar-day" style="margin-right:4px;"></i> @h.CompletedAt.ToString("dd MMM yyyy")</span>
+                                        <span class="status-badge status-@(h.Status.ToLower())" style="font-size: 0.65rem; padding: 2px 8px;">@h.Status</span>
+                                    </div>
+                                    
+                                    @if (h.CompletionImages != null && ((List<string>)h.CompletionImages).Any())
+                                    {
+                                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                            @foreach (var img in (List<string>)h.CompletionImages)
+                                            {
+                                                <div style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer;" onclick="window.open('@img', '_blank')">
+                                                    <img src="@img" style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size: 1.2rem; font-weight: 800; color: var(--secondary);">R @h.Amount.ToString("N2")</div>
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                    @if (h.Status == "PendingConfirmation")
+                                    {
+                                        <button class="btn btn-primary btn-sm" style="height: 36px; padding: 0 16px; font-size: 0.8rem; background: var(--success); border-color: var(--success);" onclick="confirmJob(@h.Id)">
+                                            <i class="fa-solid fa-check-double"></i> Confirm Work & Release Funds
+                                        </button>
+                                    }
+                                    @if (h.Status == "Completed" || h.Status == "Closed")
+                                    {
+                                        <a href="@Url.Action("Invoice", "Document", new { id = h.Id })" target="_blank" class="btn btn-outline btn-sm" style="height: 36px; gap: 6px; font-size: 0.8rem; border-color: var(--secondary); color: var(--secondary);">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> Invoice
+                                        </a>
+                                    }
+                                    @if (h.Rated == 0 && (h.Status == "Completed" || h.Status == "Closed"))
+                                    {
+                                        <button class="btn btn-primary btn-sm" style="height: 36px; padding: 0 16px; font-size: 0.8rem;" onclick="openRatingModal(@h.Id, '@h.Title')">Rate Provider</button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="text-align: center; padding: 60px; color: var(--text-muted);">
+                    <p>Your completed bookings will appear here.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="view-section" id="view-profile">
+
+    <!-- Profile Hero -->
+    <div class="profile-hero fade-up">
+        <div class="profile-avatar-lg">@User.Identity.Name.Substring(0,1).ToUpper()</div>
+        <div class="profile-hero-info">
+            <h2 class="profile-hero-name">@(ViewBag.FullName ?? User.Identity.Name.Split('@')[0])</h2>
+            <p class="profile-hero-email">@User.Identity.Name</p>
+            <span class="status-badge status-open" style="margin-top:6px;">
+                <i class="fa-solid fa-circle-check"></i> Active Account
+            </span>
+        </div>
+    </div>
+
+    <div class="profile-grid fade-up" style="animation-delay: 0.1s;">
+
+        <!-- Personal Information -->
+        <div class="card-section">
+            <div class="table-header">
+                <div>
+                    <h3>Personal Information</h3>
+                    <p>Update your name, phone and location</p>
+                </div>
+                <i class="fa-solid fa-user" style="color: var(--primary); font-size: 1.2rem; opacity: 0.4;"></i>
+            </div>
+            <div style="padding: 28px;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="profileFullName" value="@ViewBag.FullName" placeholder="e.g. John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="profilePhone" value="@ViewBag.PhoneNumber" placeholder="e.g. +27 82 123 4567">
+                </div>
+                <div class="form-group">
+                    <label>Home Location</label>
+                    <input type="text" id="profileLocation" value="@ViewBag.UserLocation" placeholder="e.g. Sandton, Johannesburg">
+                </div>
+                <button class="btn btn-primary" onclick="saveCustomerProfile()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                </button>
+            </div>
+        </div>
+
+        <!-- Account & Security -->
+        <div class="card-section">
+            <div class="table-header">
+                <div>
+                    <h3>Account & Security</h3>
+                    <p>Your login credentials and account details</p>
+                </div>
+                <i class="fa-solid fa-shield-halved" style="color: var(--secondary); font-size: 1.2rem; opacity: 0.4;"></i>
+            </div>
+            <div style="padding: 28px;">
+                <div class="form-group">
+                    <label>Registered Email</label>
+                    <input type="email" value="@User.Identity.Name" readonly>
+                    <small style="color: var(--text-muted); font-size: 0.78rem; padding-left: 4px;">
+                        <i class="fa-solid fa-lock" style="margin-right: 4px;"></i>Contact support to change your email
+                    </small>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-info-label">Account Type</span>
+                    <span class="status-badge status-open">Customer</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-info-label">Member Since</span>
+                    <span style="font-weight: 600; color: var(--text);">@DateTime.Now.Year</span>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Need to change your password?</p>
+                    <a href="@Url.Action("ForgotPassword","Account")" class="btn btn-outline" style="font-size: 0.85rem; padding: 10px 20px;">
+                        <i class="fa-solid fa-key"></i> Reset Password
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Logout section -->
+    <div class="card-section fade-up" style="margin-top: 0; animation-delay: 0.2s;">
+        <div style="padding: 20px 28px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Sign Out of CallUp</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">You'll need to log back in to access your dashboard</div>
+            </div>
+            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { style = "margin:0;" }))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline" style="border-color: var(--error); color: var(--error); padding: 10px 20px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            }
+        </div>
+    </div>
+
+</div>
+
+
+@Html.Partial("_NewRequestModal")
+@Html.Partial("_DashboardModals")
+
+<style>
+    .rating-stars i.active { color: #F59E0B; }
+</style>
+
+@section scripts {
+    <script>
+
+
+        // Messaging - Mark as read when entering messages tab
+        $(function() {
+            // Listen for section switches (defined in _Layout.cshtml)
+            const originalSwitchSection = window.switchSection;
+            window.switchSection = function(id, element) {
+                originalSwitchSection(id, element);
+                if (id === 'messages') {
+                    markMessagesRead();
+                }
+            };
+        });
+
+        function markMessagesRead() {
+            $.post('@Url.Action("MarkMessagesAsRead", "Dashboard")', {
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            }, function(res) {
+                if (res.success) {
+                    $('.unread-message div[title="New message"]').fadeOut();
+                    $('.unread-message').removeClass('unread-message').css({
+                        'border-color': 'var(--primary-light)',
+                        'background': 'rgba(var(--primary-rgb), 0.02)'
+                    });
+                }
+            });
+        }
+
+        // Star Rating Logic
+        $('.rating-stars i').on('mouseenter', function() {
+            const val = $(this).data('val');
+            $('.rating-stars i').each(function() {
+                if ($(this).data('val') <= val) $(this).addClass('active');
+                else $(this).removeClass('active');
+            });
+        }).on('mouseleave', function() {
+            const current = $('#ratingScore').val();
+            updateStars(current);
+        }).on('click', function() {
+            const val = $(this).data('val');
+            $('#ratingScore').val(val);
+            $('#ratingLabel').text(getRatingLabel(val));
+            updateStars(val);
+        });
+
+        function updateStars(val) {
+            $('.rating-stars i').each(function() {
+                if ($(this).data('val') <= val) $(this).addClass('active');
+                else $(this).removeClass('active');
+            });
+        }
+
+        function getRatingLabel(val) {
+            const labels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+            return labels[val];
+        }
+
+        function openRatingModal(id, title) {
+            $('#ratingRequestId').val(id);
+            $('#ratingTitle').text('Rate: ' + title);
+            $('#ratingScore').val(0);
+            updateStars(0);
+            $('#ratingLabel').text('Select a rating');
+            $('#ratingModal').addClass('active');
+            $('body').addClass('modal-open');
+        }
+
+        $('#ratingForm').on('submit', function(e) {
+            e.preventDefault();
+            if ($('#ratingScore').val() == "0") return showNotification("Please select a star rating.", "warning");
+
+            const btn = $(this).find('button[type="submit"]');
+            btn.prop('disabled', true).text('Submitting...');
+
+            $.post('@Url.Action("SubmitRating", "Customer")', $(this).serialize(), function(res) {
+                if (res.success) {
+                    showNotification(res.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(res.message, 'error');
+                    btn.prop('disabled', false).text('Submit Feedback');
+                }
+            });
+        });
+
+        function updateTimeline(status) {
+            const steps = {
+                'Moderation': 0,
+                'Open': 1,
+                'PendingPayment': 2,
+                'InProgress': 3,
+                'PendingConfirmation': 4,
+                'PendingApproval': 4,
+                'Completed': 5,
+                'Paid': 5
+            };
+            
+            const currentStep = steps[status] || 0;
+            const progress = (currentStep / 5) * 100;
+            
+            $('#timelineProgress').css('width', progress + '%');
+            
+            $('.timeline-step').each(function() {
+                const step = parseInt($(this).data('step'));
+                $(this).removeClass('active completed');
+                
+                if (step < currentStep) $(this).addClass('completed');
+                else if (step === currentStep) $(this).addClass('active');
+            });
+        }
+
+        function viewRequestDetails(id, title, status) {
+            $('#bidsModalTitle').text(title);
+            updateTimeline(status);
+            $('#bidsModal').addClass('active');
+            $('body').addClass('modal-open');
+            $('#bidsListContainer').html('<div style="text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);"></i><p style="margin-top:12px;">Loading bids...</p></div>');
+
+            $.post('@Url.Action("GetBids", "Customer")', { 
+                requestId: id,
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() 
+            }, function(data) {
+                if (data.success === false) {
+                    $('#bidsListContainer').html('<div style="text-align:center;padding:40px;color:var(--error);"><i class="fa-solid fa-triangle-exclamation" style="font-size:3rem;margin-bottom:12px;"></i><p>' + data.message + '</p></div>');
+                    return;
+                }
+
+                if (data.length === 0) {
+                    $('#bidsListContainer').html('<div style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fa-solid fa-face-frown" style="font-size:3rem;margin-bottom:12px;opacity:0.2;"></i><p>No bids received yet. We will notify you when providers respond.</p></div>');
+                } else {
+                    let html = '<div style="display:grid; gap:16px;">';
+                    data.forEach(function(bid) {
+                        const isSelected = bid.status === 'Accepted' || bid.status === 'Selected';
+                        html += `
+                            <div class="glass-card" style="padding:20px; border-radius:12px; border:2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}; position: relative;">
+                                ${isSelected ? '<span class="badge" style="position:absolute; top:-12px; right:20px; background:var(--primary); color:white; font-size:0.7rem; font-weight:800; padding:4px 12px; box-shadow:var(--shadow-sm);"><i class="fa-solid fa-circle-check"></i> SELECTED PROVIDER</span>' : ''}
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                                    <div>
+                                        <div style="font-weight:800; font-size:1.1rem; color:var(--text-dark);">${bid.provider}</div>
+                                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                                            <span style="color:#F59E0B; font-weight:700;"><i class="fa-solid fa-star"></i> ${bid.rating > 0 ? bid.rating : 'New'}</span>
+                                            <span style="color:var(--text-muted); font-size:0.8rem;">(${bid.reviews} reviews)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-size:1.25rem; font-weight:800; color:var(--secondary);">R ${bid.amount.toLocaleString()}</div>
+                                        <div style="font-size:0.8rem; color:var(--text-muted);">${bid.date}</div>
+                                    </div>
+                                </div>
+                                <div style="background: var(--bg-arctic); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-calendar-check text-primary"></i> <strong>Arrival:</strong> ${bid.eta || 'To be confirmed'}
+                                </div>
+                                <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:16px;">"${bid.notes}"</p>
+                                ${status === 'Open' ? `<button class="btn btn-primary" style="width:100%; height:44px;" onclick="chooseBid(${id}, ${bid.id})">Select this Provider</button>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    $('#bidsListContainer').html(html);
+                }
+            }).fail(function() {
+                $('#bidsListContainer').html('<div style="text-align:center;padding:40px;color:var(--error);"><i class="fa-solid fa-circle-exclamation" style="font-size:3rem;margin-bottom:12px;"></i><p>Failed to scan for bids. Please refresh and try again.</p></div>');
+            });
+        }
+
+        async function chooseBid(reqId, bidId) {
+            if (!await premiumConfirm("Are you sure you want to select this provider?")) return;
+            $.post('@Url.Action("SelectProvider", "Customer")', { 
+                requestId: reqId, 
+                bidId: bidId,
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            }, function(res) {
+                if (res.success) {
+                    showNotification(res.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(res.message, 'error');
+                }
+            });
+        }
+
+        async function confirmJob(id) {
+            if (!await premiumConfirm("Have you verified that the work is completed correctly? Confirming will finalize the job and authorize the release of funds to the provider.")) return;
+            
+            $.post('@Url.Action("ConfirmJob", "Dashboard")', { 
+                requestId: id,
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() 
+            }, function(res) {
+                if (res.success) {
+                    showNotification(res.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(res.message, 'error');
+                }
+            }).fail(function() {
+                showNotification("An error occurred while confirming the job.", "error");
+            });
+        }
+
+        async function cancelRequest(id) {
+            if (!await premiumConfirm("Are you sure you want to cancel this request? This action cannot be undone.")) return;
+            $.post('@Url.Action("CancelRequest", "Customer")', { 
+                id: id,
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            }, function(res) {
+                if (res.success) {
+                    showNotification(res.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(res.message, 'error');
+                }
+            }).fail(function() {
+                showNotification("An error occurred while cancelling the request.", "error");
+            });
+        }
+
+        // ── Find a Service: Provider Search ──────────────────
+        function quickSearch(term) {
+            $('#providerSearchInput').val(term);
+            searchProviders();
+        }
+
+        function searchProviders() {
+            const query = $('#providerSearchInput').val().trim();
+            if (!query) return;
+
+            const btn = $('#searchProvidersBtn');
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Searching...');
+            $('#providerResultsTitle').text('Providers for: ' + query);
+            $('#providerResults').html('<div style="text-align:center;padding:60px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);"></i><p style="margin-top:12px;color:var(--text-muted);">Finding providers...</p></div>');
+
+            const userLat = '@ViewBag.Latitude';
+            const userLng = '@ViewBag.Longitude';
+            
+            $.get('@Url.Action("Search", "Customer")', { query: query, userLat: userLat, userLng: userLng }, function(data) {
+                btn.prop('disabled', false).html('<i class="fa-solid fa-magnifying-glass"></i> Search');
+
+                if (!data || data.length === 0) {
+                    $('#providerResults').html('<div class="empty-state"><i class="fa-solid fa-user-slash"></i><p>No providers found for "' + query + '".<br>Try posting a request for bids below.</p></div>');
+                    $('#providerCount').text('');
+                    updateMapMarkers([]);
+                    return;
+                }
+
+                updateMapMarkers(data);
+                $('#providerCount').text(data.length + ' found');
+                let html = '';
+                data.forEach(function(p) {
+                    const stars = Array.from({length: 5}, (_, i) =>
+                        '<i class="fa-' + (i < Math.floor(p.avgRating) ? 'solid' : 'regular') + ' fa-star" style="color:#F59E0B;font-size:0.85rem;"></i>'
+                    ).join('');
+
+                    html += `
+                    <div class="provider-card" onclick="openProviderProfile(${p.id})">
+                        <div class="provider-card-avatar">${p.displayName.charAt(0).toUpperCase()}</div>
+                        <div class="provider-card-info">
+                            <div class="provider-card-name">${p.displayName}</div>
+                            <div class="provider-card-trade"><i class="fa-solid fa-briefcase" style="margin-right:4px;opacity:0.5;"></i>${p.categoryName || query}</div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                                <span>${stars}</span>
+                                <span style="font-size:0.78rem;color:var(--text-muted);">${p.avgRating > 0 ? p.avgRating.toFixed(1) : 'New'} (${p.reviewCount} reviews)</span>
+                            </div>
+                        </div>
+                        <div class="provider-card-action">
+                            <span style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">${p.distanceInKm ? p.distanceInKm.toFixed(1) + ' km away' : ''}</span>
+                            <button class="btn btn-primary btn-sm">Book</button>
+                        </div>
+                    </div>`;
+                });
+                $('#providerResults').html(html);
+
+            }).fail(function() {
+                btn.prop('disabled', false).html('<i class="fa-solid fa-magnifying-glass"></i> Search');
+                $('#providerResults').html('<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Search failed. Please try again.</p></div>');
+            });
+        }
+
+        // Enter key triggers search
+        $('#providerSearchInput').on('keydown', function(e) {
+            if (e.key === 'Enter') searchProviders();
+        });
+
+        // ── Direct Booking Modal ──────────────────────────────
+        function openDirectBooking(providerId, providerName, trade) {
+            $('#directBookingTitle').text('Book ' + providerName);
+            $('#directBookingProviderId').val(providerId);
+            $('#directBookingProviderName').text(providerName);
+            $('#directBookingTrade').val(trade);
+            $('#directBookingModal').addClass('active');
+            $('body').addClass('modal-open');
+        }
+
+        $('#directBookingForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $(this).find('button[type="submit"]');
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Booking...');
+            $.post('@Url.Action("DirectBook", "Customer")', $(this).serialize(), function(res) {
+                if (res.success) {
+                    showNotification(res.message, 'success');
+                    $('#directBookingModal').fadeOut();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(res.message, 'error');
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Confirm Booking');
+                }
+            }).fail(function() {
+                showNotification('Request failed. Please try again.', 'error');
+                btn.prop('disabled', false).html('<i class="fa-solid fa-paper-plane"></i> Confirm Booking');
+            });
+        });
+
+        async function processPayment(requestId) {
+            if (await premiumConfirm("Are you sure you want to process the secure payment for this service? Funds will be held in escrow until completion.")) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("ProcessSecurePayment", "Dashboard")';
+                
+                var reqInput = document.createElement('input');
+                reqInput.type = 'hidden';
+                reqInput.name = 'requestId';
+                reqInput.value = requestId;
+                form.appendChild(reqInput);
+
+                var tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = $('input[name="__RequestVerificationToken"]').val();
+                form.appendChild(tokenInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Leaflet Maps Integration
+        let map;
+        let markers = [];
+        let isMapInitialized = false;
+
+        function toggleMapView() {
+            const panel = $('#serviceMapPanel');
+            const btn = $('#toggleMapViewBtn');
+            
+            if (panel.is(':visible')) {
+                panel.fadeOut();
+                btn.removeClass('btn-primary').addClass('btn-outline');
+            } else {
+                panel.fadeIn();
+                btn.removeClass('btn-outline').addClass('btn-primary');
+                if (!isMapInitialized) {
+                    initServiceMap();
+                } else if (map) {
+                    map.invalidateSize();
+                }
+            }
+        }
+
+        function initServiceMap() {
+            const userLat = parseFloat('@(ViewBag.Latitude ?? -26.1076)');
+            const userLng = parseFloat('@(ViewBag.Longitude ?? 28.0567)');
+            
+            map = L.map('googleMap').setView([userLat, userLng], 12);
+            isMapInitialized = true;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Initial marker for User
+            L.marker([userLat, userLng]).addTo(map)
+                .bindPopup('<b>Your Location</b>')
+                .openPopup();
+            
+            // Add markers if results already exist
+            updateMapMarkers(lastSearchResults || []);
+        }
+
+        async function openProviderProfile(id) {
+            $('#pp-reviews-list').html('<div style="text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);"></i><p style="margin-top:12px;">Loading profile...</p></div>');
+            $('#providerProfileModal').addClass('active');
+            $('body').addClass('modal-open');
+
+            $.get('@Url.Action("GetProviderProfile", "Customer")', { id: id }, function(res) {
+                if (res.success) {
+                    const p = res.profile;
+                    $('#pp-image').attr('src', p.ProfileImage);
+                    $('#pp-name').text(p.DisplayName);
+                    $('#pp-trade').text(p.Category);
+                    $('#pp-location').text(p.Location);
+                    $('#pp-about').text(p.About);
+                    $('#pp-joined').text(p.Joined);
+                    $('#pp-jobs-count').text(p.JobsDone);
+                    $('#pp-avg-val').text(p.AvgRating > 0 ? p.AvgRating.toFixed(1) : 'New');
+                    $('#pp-review-count').text(p.ReviewCount + ' Verified Reviews');
+                    
+                    $('#pp-book-btn').attr('onclick', `openDirectBooking(${p.Id}, '${p.DisplayName.replace(/'/g, "\\'")}', '${p.Category}')`);
+
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        starsHtml += `<i class="fa-${i <= Math.floor(p.AvgRating) ? 'solid' : 'regular'} fa-star" style="color:#F59E0B;"></i>`;
+                    }
+                    $('#pp-stars-big').html(starsHtml);
+
+                    let reviewsHtml = '';
+                    if (res.reviews.length === 0) {
+                        reviewsHtml = '<div style="text-align:center;padding:40px;color:var(--text-muted);border:1px dashed var(--border);border-radius:16px;">This professional hasn\'t received any reviews yet.</div>';
+                    } else {
+                        res.reviews.forEach(r => {
+                            let rStars = '';
+                            for (let i = 1; i <= 5; i++) {
+                                rStars += `<i class="fa-${i <= r.score ? 'solid' : 'regular'} fa-star" style="color:#F59E0B;font-size:0.8rem;"></i>`;
+                            }
+                            reviewsHtml += `
+                                <div class="pp-review-item">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                                        <div style="font-weight:700; color:var(--text-main);">${r.customer}</div>
+                                        <div style="font-size:0.8rem; color:var(--text-muted);">${r.date}</div>
+                                    </div>
+                                    <div style="margin-bottom:10px;">${rStars}</div>
+                                    <p style="margin:0; font-size:0.92rem; color:var(--text-main); line-height:1.6;">${r.comment || "No comment left."}</p>
+                                </div>
+                            `;
+                        });
+                    }
+                    $('#pp-reviews-list').html(reviewsHtml);
+                } else {
+                    showNotification(res.message, 'error');
+                    $('#providerProfileModal').removeClass('active');
+                }
+            });
+        }
+
+        let lastSearchResults = [];
+        
+        function updateMapMarkers(results) {
+            lastSearchResults = results;
+            if (!map) return;
+
+            // Clear old markers
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            let markerList = [];
+
+            results.forEach(p => {
+                if (p.lat && p.lng && p.lat !== 0) {
+                    const marker = L.marker([p.lat, p.lng]).addTo(map);
+                    
+                    const popupContent = `
+                        <div style="padding:5px; font-family:'Outfit',sans-serif;">
+                            <h4 style="margin:0 0 5px 0; color:var(--primary);">${p.displayName}</h4>
+                            <p style="margin:0; font-size:0.8rem; color:var(--text-muted);">${p.category}</p>
+                            <p style="margin:5px 0; font-size:0.75rem;"><i class="fa-solid fa-location-dot"></i> ${p.location}</p>
+                            <button class="btn btn-primary btn-sm" style="width:100%; margin-top:5px; height:32px; font-size:0.75rem;" onclick="openDirectBooking(${p.id || 0}, '${p.displayName}', '${p.category}')">Book Now</button>
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                    markers.push(marker);
+                    markerList.push([p.lat, p.lng]);
+                }
+            });
+
+            if (markerList.length > 0) {
+                const bounds = L.latLngBounds(markerList);
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+}
+
+

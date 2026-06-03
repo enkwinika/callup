@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oncall | On-Demand Home Services South Africa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">On<span>call</span></a>
+            <div class="nav-links">
+                <a href="#how-it-works">How it Works</a>
+                <a href="#categories">Services</a>
+                <a href="login.html" class="btn btn-outline">Login</a>
+                <!-- <a href="register.html" class="btn btn-primary">Join as Provider</a> -->
+            </div>
+            <button class="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="container fade-up">
+                <div class="hero-content">
+                    <h1>Reliable Home Services, <br><span>Right at Your Fingertips.</span></h1>
+                    <p>South Africa's fastest on-demand marketplace. Type what you need, get competitive bids, and hire
+                        the best.</p>
+
+                    <div class="search-box">
+                        <div class="input-group">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="service-search"
+                                placeholder="What do you need help with today? (e.g. Fixing a leak)">
+                        </div>
+                        <button id="start-request" class="btn btn-primary btn-lg">Get Bids Now</button>
+                    </div>
+
+                    <div class="hero-stats fade-up" style="animation-delay: 0.2s;">
+                        <div class="stat">
+                            <span class="count">5,000+</span>
+                            <span class="label">Vetted Providers</span>
+                        </div>
+                        <div class="stat">
+                            <span class="count">15m</span>
+                            <span class="label">Avg. Response Time</span>
+                        </div>
+                        <div class="stat">
+                            <span class="count">4.8/5</span>
+                            <span class="label">User Rating</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="categories" class="categories">
+            <div class="container fade-up" style="animation-delay: 0.4s;">
+                <div class="section-header">
+                    <h2>Popular Services</h2>
+                    <p>Explore our most requested home services across South Africa.</p>
+                </div>
+                <div class="category-grid">
+                    <div class="category-card" data-service="Cleaning">
+                        <div class="icon"><i class="fa-solid fa-broom"></i></div>
+                        <h3>Cleaning</h3>
+                        <p>Homes, offices, & deep cleaning.</p>
+                    </div>
+                    <div class="category-card" data-service="Plumbing">
+                        <div class="icon"><i class="fa-solid fa-faucet-drip"></i></div>
+                        <h3>Plumbing</h3>
+                        <p>Leaks, blocked drains, & geysers.</p>
+                    </div>
+                    <div class="category-card" data-service="Electrical">
+                        <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+                        <h3>Electrical</h3>
+                        <p>Wiring, DB boards, & lighting.</p>
+                    </div>
+                    <div class="category-card" data-service="Gardening">
+                        <div class="icon"><i class="fa-solid fa-seedling"></i></div>
+                        <h3>Gardening</h3>
+                        <p>Landscaping & maintenance.</p>
+                    </div>
+                    <div class="category-card" data-service="Handyman">
+                        <div class="icon"><i class="fa-solid fa-hammer"></i></div>
+                        <h3>Handyman</h3>
+                        <p>Repairs, mounting, & assembly.</p>
+                    </div>
+                    <div class="category-card" data-service="Security">
+                        <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h3>Security</h3>
+                        <p>CCTV, alarms, & electric fencing.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <div class="container">
+                <div class="section-header">
+                    <h2>How Oncall Works</h2>
+                    <p>Getting your home tasks done has never been easier.</p>
+                </div>
+                <div class="steps-grid">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <h3>Describe your Need</h3>
+                        <p>Type what you need in plain language. Add photos and your location.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <h3>Receive Real-time Bids</h3>
+                        <p>Available pros in your area submit competitive offers within minutes.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <h3>Pick the Best Provider</h3>
+                        <p>Compare ratings, reviews, and prices. Secure your booking in-app.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Request Modal -->
+    <div class="modal-overlay" id="request-modal">
+        <div class="modal-content glass">
+            <button class="close-modal">&times;</button>
+            <div class="modal-body">
+                <div id="step-1" class="request-step active">
+                    <h2>Tell us more about the job</h2>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="job-desc" placeholder="Describe what you need help with..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="job-location" placeholder="e.g. Sandton, Johannesburg">
+                        </div>
+                        <div class="form-group">
+                            <label>When?</label>
+                            <select id="job-urgency">
+                                <option value="immediate">As soon as possible</option>
+                                <option value="today">Sometime today</option>
+                                <option value="scheduled">Schedule for later</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="next-to-bids" class="btn btn-primary btn-block">Broadcast Request</button>
+                </div>
+
+                <div id="step-2" class="request-step">
+                    <div class="bidding-header">
+                        <h2>Finding Providers...</h2>
+                        <div class="loader-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <p>Your request has been sent to 12 nearby pros.</p>
+                    </div>
+                    <div class="live-bids-container" id="live-bids">
+                        <!-- Bids will appear here -->
+                        <div class="empty-bids">
+                            <p>Waiting for the first bid...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="logo">On<span>call</span></a>
+                    <p>On-demand home services marketplace for South Africa.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>Platform</h4>
+                        <a href="#">How it Works</a>
+                        <a href="#">Safety & Trust</a>
+                        <a href="#">Pricing</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Contact</a>
+                        <a href="#">Careers</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Oncall. POPIA Compliant. Built for South Africa.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
