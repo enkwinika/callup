@@ -52,3 +52,10 @@ This document maintains a persistent history of development, architectural decis
 - **Registration UX Overhaul**: Redesigned the registration flow to use a step-based card selection system.
     - **Clarity**: Users must now explicitly choose "Customer" or "Service Provider" via large interactive cards before the form is revealed.
     - **Visual Cues**: Each role has distinct icons and colored badges (Blue for Customers, Green for Providers) to prevent registration errors.
+
+## 5. Git Repository & Remote Hosting (June 2026)
+- **Repository Setup**: Initialized Git version control inside the workspace root.
+- **Gitignore Configuration**: Formulated a tailored `.gitignore` to prevent tracking compile artifacts (`bin/`, `obj/`, `Temporary-ASP-Files/`), user settings (`.vs/`, `*.user`), and NuGet package directories.
+- **GitHub Integration**: Connected local repository to remote origin `https://github.com/enkwinika/callup.git` and configured tracking for the main branch (`main`).
+- **Initial Push**: Safely pushed the codebase to remote `main` without any conflicts or code loss.
+
